@@ -6,7 +6,7 @@ import sys
 # Add the script's directory to the Python path
 sys.path.append('scripts')
 
-from post_to_discord import main, get_feeds, parse_feed
+from post_to_discord import main, get_feeds, parse_feed, filter_new_entries
 
 class TestPostToDiscord(unittest.TestCase):
 
@@ -24,7 +24,7 @@ class TestPostToDiscord(unittest.TestCase):
             mock_supabase_client = MagicMock()
             mock_create_client.return_value = mock_supabase_client
             main()
-            self.assertEqual(mock_stdout.getvalue().strip(), "Parsed feed Feed 1: Test Title")
+            self.assertEqual(mock_stdout.getvalue().strip(), "New entries found for Feed 1: 1")
 
     def test_get_feeds(self):
         mock_supabase_client = MagicMock()
@@ -44,6 +44,33 @@ class TestPostToDiscord(unittest.TestCase):
         parsed_feed = parse_feed(feed_url)
         mock_feedparser_parse.assert_called_once_with(feed_url)
         self.assertEqual(parsed_feed.entries[0].title, "Test Title")
+
+    def test_filter_new_entries(self):
+        entries = [
+            MagicMock(guid="guid1", title="Title 1"),
+            MagicMock(guid="guid2", title="Title 2"),
+            MagicMock(guid="guid3", title="Title 3"),
+        ]
+
+        # Case 1: No last_posted_guid, all entries are new
+        new_entries = filter_new_entries(entries, None)
+        self.assertEqual(len(new_entries), 3)
+        self.assertEqual(new_entries[0].guid, "guid1")
+
+        # Case 2: last_posted_guid matches an existing entry
+        new_entries = filter_new_entries(entries, "guid2")
+        self.assertEqual(len(new_entries), 1)
+        self.assertEqual(new_entries[0].guid, "guid3")
+
+        # Case 3: last_posted_guid is the latest entry
+        new_entries = filter_new_entries(entries, "guid3")
+        self.assertEqual(len(new_entries), 0)
+
+        # Case 4: No new entries
+        new_entries = filter_new_entries(entries, "guid1")
+        self.assertEqual(len(new_entries), 2)
+        self.assertEqual(new_entries[0].guid, "guid2")
+        self.assertEqual(new_entries[1].guid, "guid3")
 
 if __name__ == '__main__':
     unittest.main()
