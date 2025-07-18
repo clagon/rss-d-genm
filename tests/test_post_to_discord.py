@@ -99,3 +99,15 @@ class TestPostToDiscord(unittest.TestCase):
         mock_supabase_client.table().update.assert_called_once_with({'last_posted_guid': guid})
         mock_supabase_client.table().update().eq.assert_called_once_with('id', feed_id)
         mock_supabase_client.table().update().eq().execute.assert_called_once()
+
+    @patch('sys.stdout', new_callable=StringIO)
+    @patch('post_to_discord.get_feeds', side_effect=Exception("Test error"))
+    @patch('post_to_discord.create_client')
+    def test_main_error_handling(self, mock_create_client, mock_get_feeds, mock_stdout):
+        mock_supabase_client = MagicMock()
+        mock_create_client.return_value = mock_supabase_client
+        main()
+        self.assertIn("An unexpected error occurred: Test error", mock_stdout.getvalue())
+
+if __name__ == '__main__':
+    unittest.main()

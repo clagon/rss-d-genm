@@ -13,20 +13,30 @@ def get_feeds(client: Client):
 
 
 def main():
-    supabase_url = os.environ.get("SUPABASE_URL")
-    supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-    supabase_client = create_client(supabase_url, supabase_key)
-    feeds = get_feeds(supabase_client)
-    for feed in feeds:
-        parsed_feed = parse_feed(feed["url"])
-        new_entries = filter_new_entries(parsed_feed.entries, feed.get("last_posted_guid"))
-        if new_entries:
-            print(f"New entries found for {feed['name']}: {len(new_entries)}")
-            for entry in new_entries:
-                send_discord_notification(entry, feed["tags"][0]["discord_webhook_url"])
-            update_last_posted_guid(supabase_client, feed["id"], new_entries[-1].guid)
-        else:
-            print(f"No new entries for {feed['name']}")
+    try:
+        supabase_url = os.environ.get("SUPABASE_URL")
+        supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+        supabase_client = create_client(supabase_url, supabase_key)
+
+        feeds = get_feeds(supabase_client)
+
+        for feed in feeds:
+            try:
+                parsed_feed = parse_feed(feed["url"])
+                new_entries = filter_new_entries(parsed_feed.entries, feed.get("last_posted_guid"))
+
+                if new_entries:
+                    print(f"New entries found for {feed['name']}: {len(new_entries)}")
+                    for entry in new_entries:
+                        send_discord_notification(entry, feed["tags"][0]["discord_webhook_url"])
+                    update_last_posted_guid(supabase_client, feed["id"], new_entries[-1].guid)
+                else:
+                    print(f"No new entries for {feed['name']}")
+            except Exception as e:
+                print(f"Error processing feed {feed.get('name', feed.get('id'))}: {e}")
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
 def update_last_posted_guid(client: Client, feed_id: str, guid: str):
     client.table('feeds').update({'last_posted_guid': guid}).eq('id', feed_id).execute()
