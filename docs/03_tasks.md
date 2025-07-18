@@ -29,7 +29,7 @@
     *   [x] ヘッダーコンポーネント (`components/Layout/TheHeader.vue`) を作成する
 2.  **認証機能**
     *   [x] Discordプロバイダを使ったログインページ (`/login`) を作成する
-    *   [ ] ログイン処理を実装し、Supabaseの `auth.users` と連携させる
+    *   [x] ログイン処理を実装し、Supabaseの `auth.users` と連携させる
     *   [ ] 認証状態を管理するComposable (`useAuth`) を作成する
     *   [ ] ログインユーザーの情報をヘッダーに表示する
     *   [ ] ログアウト機能を実装する
