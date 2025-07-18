@@ -8,7 +8,7 @@
     *   [x] `users`, `feeds`, `tags`, `feed_tags` テーブルを作成する (スキーマは設計書参照)
     *   [ ] RLS (Row Level Security) を初期設定する (一旦全許可、後で厳格化)
 2.  **RSS投稿バッチ (Python)**
-    *   [ ] `scripts/post_to_discord.py` の雛形を作成する
+    *   [x] `scripts/post_to_discord.py` の雛形を作成する
     *   [ ] Supabaseから有効なフィード一覧を取得する処理を実装する
     *   [ ] `feedparser` を使ってRSSフィードを解析する処理を実装する
     *   [ ] 新規投稿のみをフィルタリングするロジックを実装する (差分チェック)
