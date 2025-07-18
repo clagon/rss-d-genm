@@ -35,7 +35,7 @@
     *   [x] ログアウト機能を実装する
     *   [x] 認証が必要なページを守るためのRoute Middlewareを実装する
 3.  **フィード一覧表示 (一般ユーザー向け)**
-    *   [ ] `/feeds` ページを作成する
+    *   [x] `/feeds` ページを作成する
     *   [ ] Supabaseからフィード一覧を取得するAPI (`/api/feeds`) を作成する
     *   [ ] フィード一覧を表示するコンポーネント (`components/Feed/FeedList.vue`) を作成する
     *   [ ] フィード項目コンポーネント (`components/Feed/FeedListItem.vue`) を作成する
