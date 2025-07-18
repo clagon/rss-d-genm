@@ -13,7 +13,7 @@
     *   [x] `feedparser` を使ってRSSフィードを解析する処理を実装する
     *   [x] 新規投稿のみをフィルタリングするロジックを実装する (差分チェック)
     *   [x] Discord Webhookに通知を送信する処理を実装する
-    *   [ ] 処理済みの記事IDを `last_posted_guid` としてSupabaseに保存する処理を実装する
+    *   [x] 処理済みの記事IDを `last_posted_guid` としてSupabaseに保存する処理を実装する
     *   [ ] 簡単なエラーハンドリングを実装する (try-except)
 3.  **GitHub Actionsワークフロー**
     *   [ ] `.github/workflows/rss_poster.yml` を作成する

@@ -24,8 +24,13 @@ def main():
             print(f"New entries found for {feed['name']}: {len(new_entries)}")
             for entry in new_entries:
                 send_discord_notification(entry, feed["tags"][0]["discord_webhook_url"])
+            update_last_posted_guid(supabase_client, feed["id"], new_entries[-1].guid)
         else:
             print(f"No new entries for {feed['name']}")
+
+def update_last_posted_guid(client: Client, feed_id: str, guid: str):
+    client.table('feeds').update({'last_posted_guid': guid}).eq('id', feed_id).execute()
+    print(f"Updated last_posted_guid for feed {feed_id} to {guid}")
 
 def send_discord_notification(entry, webhook_url):
     message = {

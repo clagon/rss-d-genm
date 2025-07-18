@@ -6,7 +6,7 @@ import sys
 # Add the script's directory to the Python path
 sys.path.append('scripts')
 
-from post_to_discord import main, get_feeds, parse_feed, filter_new_entries, send_discord_notification
+from post_to_discord import main, get_feeds, parse_feed, filter_new_entries, send_discord_notification, update_last_posted_guid
 
 class TestPostToDiscord(unittest.TestCase):
 
@@ -25,7 +25,7 @@ class TestPostToDiscord(unittest.TestCase):
             mock_supabase_client = MagicMock()
             mock_create_client.return_value = mock_supabase_client
             main()
-            self.assertEqual(mock_stdout.getvalue().strip(), "New entries found for Feed 1: 1")
+            self.assertEqual(mock_stdout.getvalue().strip(), "New entries found for Feed 1: 1\nUpdated last_posted_guid for feed 1 to " + str(mock_parse_feed.return_value.entries[-1].guid))
 
     def test_get_feeds(self):
         mock_supabase_client = MagicMock()
@@ -89,3 +89,13 @@ class TestPostToDiscord(unittest.TestCase):
             ]
         })
         mock_post.return_value.raise_for_status.assert_called_once()
+
+    def test_update_last_posted_guid(self):
+        mock_supabase_client = MagicMock()
+        feed_id = "test_feed_id"
+        guid = "test_guid"
+        update_last_posted_guid(mock_supabase_client, feed_id, guid)
+        mock_supabase_client.table.assert_called_once_with('feeds')
+        mock_supabase_client.table().update.assert_called_once_with({'last_posted_guid': guid})
+        mock_supabase_client.table().update().eq.assert_called_once_with('id', feed_id)
+        mock_supabase_client.table().update().eq().execute.assert_called_once()
