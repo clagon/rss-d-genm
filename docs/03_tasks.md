@@ -24,7 +24,7 @@
 ### フロントエンド (Nuxt.js)
 
 1.  **Nuxtプロジェクト初期設定**
-    *   [ ] `@nuxtjs/supabase` モジュールを導入し、環境変数を設定する
+    *   [x] `@nuxtjs/supabase` モジュールを導入し、環境変数を設定する
     *   [ ] `@nuxt/ui` を使った基本的なレイアウト (`layouts/default.vue`) を作成する
     *   [ ] ヘッダーコンポーネント (`components/Layout/TheHeader.vue`) を作成する
 2.  **認証機能**
