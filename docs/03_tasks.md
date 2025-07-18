@@ -62,10 +62,10 @@
     *   [x] フィードの編集機能を実装する
     *   [x] フィードの削除機能を実装する (確認ダイアログ付き)
 2.  **タグ管理機能 (管理者向け)**
-    *   [ ] `/admin/tags` ページにタグ一覧をテーブル表示する (`components/Admin/TagDataTable.vue`)
-    *   [ ] タグの新規登録フォーム (`components/Admin/TagEditor.vue`) をモーダルで実装する
-    *   [ ] タグの編集機能を実装する
-    *   [ ] タグの削除機能を実装する
+    *   [x] `/admin/tags` ページにタグ一覧をテーブル表示する (`components/Admin/TagDataTable.vue`)
+    *   [x] タグの新規登録フォーム (`components/Admin/TagEditor.vue`) をモーダルで実装する
+    *   [x] タグの編集機能を実装する
+    *   [x] タグの削除機能を実装する
 3.  **UI/UX改善**
     *   [ ] 各操作に対するトースト通知 (`useToast`) を実装する
     *   [ ] フィード一覧のタグ検索機能を実装する
