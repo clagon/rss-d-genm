@@ -40,7 +40,7 @@
     *   [x] フィード一覧を表示するコンポーネント (`components/Feed/FeedList.vue`) を作成する
     *   [x] フィード項目コンポーネント (`components/Feed/FeedListItem.vue`) を作成する
 4.  **管理機能プレースホルダー**
-    *   [ ] 管理者向けページのレイアウト (`layouts/admin.vue`) を作成する
+    *   [x] 管理者向けページのレイアウト (`layouts/admin.vue`) を作成する
     *   [ ] `/admin/feeds`, `/admin/tags` のプレースホルダーページを作成する
 
 ## v1.0
