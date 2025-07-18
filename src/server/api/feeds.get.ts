@@ -1,7 +1,13 @@
-import { serverSupabaseClient } from '#supabase/server';
+import { serverSupabaseClient, serverSupabaseUser } from '#supabase/server';
 
 export default defineEventHandler(async (event) => {
+  const user = await serverSupabaseUser(event);
   const client = serverSupabaseClient(event);
+
+  if (!user) {
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' });
+  }
+
   const { data, error } = await client
     .from('feeds')
     .select('*, tags(*)')
