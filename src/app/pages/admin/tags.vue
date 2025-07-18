@@ -24,8 +24,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useSupabaseClient } from '#imports';
+import { useToast } from '@nuxt/ui';
 
 const supabase = useSupabaseClient();
+const toast = useToast();
 
 const isTagEditorOpen = ref(false);
 const editingTag = ref(null);
@@ -36,6 +38,7 @@ const { data: tags, pending, refresh } = useAsyncData('admin-tags', async () => 
     .select('*');
 
   if (error) {
+    toast.add({ title: 'Error', description: error.message, color: 'red' });
     throw new Error(error.message);
   }
   return data;
@@ -64,8 +67,9 @@ const deleteTag = async (tagId) => {
       .eq('id', tagId);
 
     if (error) {
-      alert(error.message);
+      toast.add({ title: 'Error', description: error.message, color: 'red' });
     } else {
+      toast.add({ title: 'Success', description: 'Tag deleted successfully.', color: 'green' });
       refresh();
     }
   }
@@ -80,8 +84,9 @@ const handleTagSubmit = async (tagData) => {
       .eq('id', editingTag.value.id);
 
     if (error) {
-      alert(error.message);
+      toast.add({ title: 'Error', description: error.message, color: 'red' });
     } else {
+      toast.add({ title: 'Success', description: 'Tag updated successfully.', color: 'green' });
       refresh();
       closeTagEditor();
     }
@@ -92,8 +97,9 @@ const handleTagSubmit = async (tagData) => {
       .insert({ name: tagData.name, discord_channel_id: tagData.discord_channel_id, discord_webhook_url: tagData.discord_webhook_url });
 
     if (error) {
-      alert(error.message);
+      toast.add({ title: 'Error', description: error.message, color: 'red' });
     } else {
+      toast.add({ title: 'Success', description: 'Tag added successfully.', color: 'green' });
       refresh();
       closeTagEditor();
     }

@@ -24,8 +24,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useSupabaseClient } from '#imports';
+import { useToast } from '@nuxt/ui';
 
 const supabase = useSupabaseClient();
+const toast = useToast();
 
 const isFeedEditorOpen = ref(false);
 const editingFeed = ref(null);
@@ -36,6 +38,7 @@ const { data: feeds, pending, refresh } = useAsyncData('admin-feeds', async () =
     .select('*, tags(*)');
 
   if (error) {
+    toast.add({ title: 'Error', description: error.message, color: 'red' });
     throw new Error(error.message);
   }
   return data;
@@ -64,8 +67,9 @@ const deleteFeed = async (feedId) => {
       .eq('id', feedId);
 
     if (error) {
-      alert(error.message);
+      toast.add({ title: 'Error', description: error.message, color: 'red' });
     } else {
+      toast.add({ title: 'Success', description: 'Feed deleted successfully.', color: 'green' });
       refresh();
     }
   }
@@ -80,10 +84,11 @@ const handleFeedSubmit = async (feedData) => {
       .eq('id', editingFeed.value.id);
 
     if (error) {
-      alert(error.message);
+      toast.add({ title: 'Error', description: error.message, color: 'red' });
     } else {
       // Update feed_tags
       await updateFeedTags(editingFeed.value.id, feedData.tags);
+      toast.add({ title: 'Success', description: 'Feed updated successfully.', color: 'green' });
       refresh();
       closeFeedEditor();
     }
@@ -95,12 +100,13 @@ const handleFeedSubmit = async (feedData) => {
       .select();
 
     if (error) {
-      alert(error.message);
+      toast.add({ title: 'Error', description: error.message, color: 'red' });
     } else {
       // Insert feed_tags
       if (data && data.length > 0) {
         await updateFeedTags(data[0].id, feedData.tags);
       }
+      toast.add({ title: 'Success', description: 'Feed added successfully.', color: 'green' });
       refresh();
       closeFeedEditor();
     }
@@ -109,14 +115,20 @@ const handleFeedSubmit = async (feedData) => {
 
 const updateFeedTags = async (feedId, tags) => {
   // Delete existing feed_tags for this feed
-  await supabase.from('feed_tags').delete().eq('feed_id', feedId);
+  const { error: deleteError } = await supabase.from('feed_tags').delete().eq('feed_id', feedId);
+  if (deleteError) {
+    console.error('Error deleting old feed tags:', deleteError);
+    toast.add({ title: 'Error', description: deleteError.message, color: 'red' });
+    return;
+  }
 
   // Insert new feed_tags
   if (tags && tags.length > 0) {
     const feedTagsToInsert = tags.map(tagId => ({ feed_id: feedId, tag_id: tagId }));
-    const { error } = await supabase.from('feed_tags').insert(feedTagsToInsert);
-    if (error) {
-      console.error('Error updating feed tags:', error);
+    const { error: insertError } = await supabase.from('feed_tags').insert(feedTagsToInsert);
+    if (insertError) {
+      console.error('Error inserting new feed tags:', insertError);
+      toast.add({ title: 'Error', description: insertError.message, color: 'red' });
     }
   }
 };
