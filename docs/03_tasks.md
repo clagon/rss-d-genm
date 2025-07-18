@@ -17,7 +17,7 @@
     *   [x] 簡単なエラーハンドリングを実装する (try-except)
 3.  **GitHub Actionsワークフロー**
     *   [x] `.github/workflows/rss_poster.yml` を作成する
-    *   [ ] Pythonのセットアップと依存関係のインストールを行うステップを追加する
+    *   [x] Pythonのセットアップと依存関係のインストールを行うステップを追加する
     *   [ ] スクリプト実行ステップを追加し、Supabaseの接続情報をSecrets経由で渡す
     *   [ ] 1時間ごとの定期実行 (`schedule`) と手動実行 (`workflow_dispatch`) を設定する
 
