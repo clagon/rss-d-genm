@@ -57,10 +57,10 @@
 ### フロントエンド
 
 1.  **フィード管理機能 (管理者向け)**
-    *   [ ] `/admin/feeds` ページにフィード一覧をテーブル表示する (`components/Admin/FeedDataTable.vue`)
-    *   [ ] フィードの新規登録フォーム (`components/Admin/FeedEditor.vue`) をモーダルで実装する
-    *   [ ] フィードの編集機能を実装する
-    *   [ ] フィードの削除機能を実装する (確認ダイアログ付き)
+    *   [x] `/admin/feeds` ページにフィード一覧をテーブル表示する (`components/Admin/FeedDataTable.vue`)
+    *   [x] フィードの新規登録フォーム (`components/Admin/FeedEditor.vue`) をモーダルで実装する
+    *   [x] フィードの編集機能を実装する
+    *   [x] フィードの削除機能を実装する (確認ダイアログ付き)
 2.  **タグ管理機能 (管理者向け)**
     *   [ ] `/admin/tags` ページにタグ一覧をテーブル表示する (`components/Admin/TagDataTable.vue`)
     *   [ ] タグの新規登録フォーム (`components/Admin/TagEditor.vue`) をモーダルで実装する
