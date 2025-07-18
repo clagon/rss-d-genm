@@ -30,7 +30,7 @@
 2.  **認証機能**
     *   [x] Discordプロバイダを使ったログインページ (`/login`) を作成する
     *   [x] ログイン処理を実装し、Supabaseの `auth.users` と連携させる
-    *   [ ] 認証状態を管理するComposable (`useAuth`) を作成する
+    *   [x] 認証状態を管理するComposable (`useAuth`) を作成する
     *   [ ] ログインユーザーの情報をヘッダーに表示する
     *   [ ] ログアウト機能を実装する
     *   [ ] 認証が必要なページを守るためのRoute Middlewareを実装する
