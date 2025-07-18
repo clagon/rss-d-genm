@@ -38,7 +38,7 @@
     *   [x] `/feeds` ページを作成する
     *   [x] Supabaseからフィード一覧を取得するAPI (`/api/feeds`) を作成する
     *   [x] フィード一覧を表示するコンポーネント (`components/Feed/FeedList.vue`) を作成する
-    *   [ ] フィード項目コンポーネント (`components/Feed/FeedListItem.vue`) を作成する
+    *   [x] フィード項目コンポーネント (`components/Feed/FeedListItem.vue`) を作成する
 4.  **管理機能プレースホルダー**
     *   [ ] 管理者向けページのレイアウト (`layouts/admin.vue`) を作成する
     *   [ ] `/admin/feeds`, `/admin/tags` のプレースホルダーページを作成する
