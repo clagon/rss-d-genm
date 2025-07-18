@@ -22,8 +22,24 @@ def main():
         new_entries = filter_new_entries(parsed_feed.entries, feed.get("last_posted_guid"))
         if new_entries:
             print(f"New entries found for {feed['name']}: {len(new_entries)}")
+            for entry in new_entries:
+                send_discord_notification(entry, feed["tags"][0]["discord_webhook_url"])
         else:
             print(f"No new entries for {feed['name']}")
+
+def send_discord_notification(entry, webhook_url):
+    message = {
+        "embeds": [
+            {
+                "title": entry.title,
+                "description": entry.summary,
+                "url": entry.link
+            }
+        ]
+    }
+    response = requests.post(webhook_url, json=message)
+    response.raise_for_status() # Raise an exception for HTTP errors
+    print(f"Notification sent for {entry.title}")
 
 def filter_new_entries(entries, last_posted_guid):
     if not last_posted_guid:

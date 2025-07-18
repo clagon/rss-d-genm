@@ -6,16 +6,17 @@ import sys
 # Add the script's directory to the Python path
 sys.path.append('scripts')
 
-from post_to_discord import main, get_feeds, parse_feed, filter_new_entries
+from post_to_discord import main, get_feeds, parse_feed, filter_new_entries, send_discord_notification
 
 class TestPostToDiscord(unittest.TestCase):
 
     @patch('sys.stdout', new_callable=StringIO)
     @patch('post_to_discord.get_feeds')
     @patch('post_to_discord.parse_feed')
-    def test_main_prints_feeds(self, mock_parse_feed, mock_get_feeds, mock_stdout):
+    @patch('post_to_discord.send_discord_notification')
+    def test_main_prints_feeds(self, mock_send_discord_notification, mock_parse_feed, mock_get_feeds, mock_stdout):
         mock_get_feeds.return_value = [
-            {"id": 1, "name": "Feed 1", "url": "http://example.com/rss1", "enabled": True},
+            {"id": 1, "name": "Feed 1", "url": "http://example.com/rss1", "enabled": True, "tags": [{"discord_webhook_url": "http://test.com/webhook"}]},
         ]
         mock_parse_feed.return_value = MagicMock(
             entries=[MagicMock(title="Test Title", summary="Test Summary", link="http://test.com/article1")]
@@ -72,5 +73,19 @@ class TestPostToDiscord(unittest.TestCase):
         self.assertEqual(new_entries[0].guid, "guid2")
         self.assertEqual(new_entries[1].guid, "guid3")
 
-if __name__ == '__main__':
-    unittest.main()
+    @patch('post_to_discord.requests.post')
+    def test_send_discord_notification(self, mock_post):
+        mock_post.return_value.raise_for_status = MagicMock()
+        entry = MagicMock(title="Test Title", summary="Test Summary", link="http://test.com/article")
+        webhook_url = "http://test.com/webhook"
+        send_discord_notification(entry, webhook_url)
+        mock_post.assert_called_once_with(webhook_url, json={
+            "embeds": [
+                {
+                    "title": "Test Title",
+                    "description": "Test Summary",
+                    "url": "http://test.com/article"
+                }
+            ]
+        })
+        mock_post.return_value.raise_for_status.assert_called_once()
