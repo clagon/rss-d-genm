@@ -10,7 +10,7 @@
 2.  **RSS投稿バッチ (Python)**
     *   [x] `scripts/post_to_discord.py` の雛形を作成する
     *   [x] Supabaseから有効なフィード一覧を取得する処理を実装する
-    *   [ ] `feedparser` を使ってRSSフィードを解析する処理を実装する
+    *   [x] `feedparser` を使ってRSSフィードを解析する処理を実装する
     *   [ ] 新規投稿のみをフィルタリングするロジックを実装する (差分チェック)
     *   [ ] Discord Webhookに通知を送信する処理を実装する
     *   [ ] 処理済みの記事IDを `last_posted_guid` としてSupabaseに保存する処理を実装する
