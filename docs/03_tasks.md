@@ -28,7 +28,7 @@
     *   [x] `@nuxt/ui` を使った基本的なレイアウト (`layouts/default.vue`) を作成する
     *   [x] ヘッダーコンポーネント (`components/Layout/TheHeader.vue`) を作成する
 2.  **認証機能**
-    *   [ ] Discordプロバイダを使ったログインページ (`/login`) を作成する
+    *   [x] Discordプロバイダを使ったログインページ (`/login`) を作成する
     *   [ ] ログイン処理を実装し、Supabaseの `auth.users` と連携させる
     *   [ ] 認証状態を管理するComposable (`useAuth`) を作成する
     *   [ ] ログインユーザーの情報をヘッダーに表示する
