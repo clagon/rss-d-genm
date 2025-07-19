@@ -20,7 +20,8 @@
 				"wscats.vue",
 				"aeschli.vscode-css-formatter",
 				"esbenp.prettier-vscode",
-				"rvest.vs-code-prettier-eslint"
+				"rvest.vs-code-prettier-eslint",
+				"eamodio.gitlens"
 			],
 			"settings": {
 				"editor.formatOnSave": true
