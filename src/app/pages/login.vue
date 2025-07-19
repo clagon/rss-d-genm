@@ -12,6 +12,7 @@
           color="primary"
           variant="solid"
           label="Login with Discord"
+          class="cursor-pointer"
           :loading="loading"
           @click="signInWithDiscord"
         />
@@ -25,14 +26,14 @@ const supabase = useSupabaseClient();
 const loading = ref(false);
 
 const signInWithDiscord = async () => {
+  console.log("login");
   loading.value = true;
   const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'discord',
+    provider: "discord",
     options: {
-      redirectTo: window.location.origin + '/confirm',
+      redirectTo: window.location.origin + "/confirm",
     },
   });
-
   if (error) {
     console.error(error);
     alert(error.message);

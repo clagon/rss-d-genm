@@ -34,9 +34,9 @@ const props = defineProps({
 const emit = defineEmits(['edit', 'delete']);
 
 const columns = [
-  { key: 'name', label: 'Name' },
-  { key: 'discord_channel_id', label: 'Discord Channel ID' },
-  { key: 'discord_webhook_url', label: 'Discord Webhook URL' },
-  { key: 'actions', label: 'Actions' },
+  { key: 'name', label: 'Name', id: 'name' },
+  { key: 'discord_channel_id', label: 'Discord Channel ID', id: 'discord_channel_id' },
+  { key: 'discord_webhook_url', label: 'Discord Webhook URL', id: 'discord_webhook_url' },
+  { key: 'actions', label: 'Actions', id: 'actions' },
 ];
 </script>

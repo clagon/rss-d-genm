@@ -47,10 +47,10 @@ const props = defineProps({
 const emit = defineEmits(['edit', 'delete']);
 
 const columns = [
-  { key: 'name', label: 'Name' },
-  { key: 'url', label: 'URL' },
-  { key: 'enabled', label: 'Enabled' },
-  { key: 'tags', label: 'Tags' },
-  { key: 'actions', label: 'Actions' },
+  { key: 'name', label: 'Name', id: 'name' },
+  { key: 'url', label: 'URL', id: 'url' },
+  { key: 'enabled', label: 'Enabled', id: 'enabled' },
+  { key: 'tags', label: 'Tags', id: 'tags' },
+  { key: 'actions', label: 'Actions', id: 'actions' },
 ];
 </script>
