@@ -21,6 +21,12 @@
 		showFeedEditor = true;
 	}
 
+	function handleDeleteFeed(id: string) {
+		if (confirm('Are you sure you want to delete this feed?')) {
+			feeds = feeds.filter(feed => feed.id !== id);
+		}
+	}
+
 	function handleSaveFeed(event: CustomEvent) {
 		const savedFeed = event.detail;
 		if (savedFeed.id) {
@@ -62,7 +68,7 @@
 				<TableCell>{feed.enabled ? 'Yes' : 'No'}</TableCell>
 				<TableCell>
 					<Button size="sm" class="mr-2" on:click={() => openEditFeedModal(feed)}>Edit</Button>
-					<Button size="sm" color="red">Delete</Button>
+					<Button size="sm" color="red" on:click={() => handleDeleteFeed(feed.id)}>Delete</Button>
 				</TableCell>
 			</TableRow>
 		{/each}
