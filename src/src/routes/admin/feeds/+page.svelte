@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { Table, TableBody, TableHead, TableHeadCell, TableRow, TableCell, Button, Badge } from 'flowbite-svelte';
 	import FeedEditor from '$lib/components/FeedEditor.svelte';
+	import * as feedApi from '$lib/api/feeds';
 
-	// TODO: Replace with actual data
-	let feeds = [
-		{ id: '1', name: 'Google AI Blog', url: 'https://ai.googleblog.com/feeds/posts/default', tags: ['AI', 'Google'], enabled: true },
-		{ id: '2', name: 'Svelte Blog', url: 'https://svelte.dev/blog/rss.xml', tags: ['Svelte', 'WebDev'], enabled: false },
-	];
+	let feeds = feedApi.getAllFeeds();
 
 	let showFeedEditor = false;
 	let currentFeed = { id: '', name: '', url: '', tags: [] as string[], enabled: true };
@@ -23,20 +20,19 @@
 
 	function handleDeleteFeed(id: string) {
 		if (confirm('Are you sure you want to delete this feed?')) {
-			feeds = feeds.filter(feed => feed.id !== id);
+			feedApi.deleteFeed(id);
+			feeds = feedApi.getAllFeeds(); // Refresh list
 		}
 	}
 
 	function handleSaveFeed(event: CustomEvent) {
 		const savedFeed = event.detail;
 		if (savedFeed.id) {
-			// Update existing feed
-			feeds = feeds.map(f => (f.id === savedFeed.id ? savedFeed : f));
+			feedApi.updateFeed(savedFeed);
 		} else {
-			// Add new feed
-			savedFeed.id = String(feeds.length + 1); // Simple ID generation for mock
-			feeds = [...feeds, savedFeed];
+			feedApi.createFeed(savedFeed);
 		}
+		feeds = feedApi.getAllFeeds(); // Refresh list
 		showFeedEditor = false;
 	}
 </script>
