@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { Table, TableBody, TableHead, TableHeadCell, TableRow, TableCell, Button } from 'flowbite-svelte';
 	import TagEditor from '$lib/components/TagEditor.svelte';
+	import * as tagApi from '$lib/api/tags';
 
-	// TODO: Replace with actual data
-	let tags = [
-		{ id: '1', name: 'AI', discord_channel_id: '1234567890', discord_webhook_url: 'https://discord.com/api/webhooks/...' },
-		{ id: '2', name: 'WebDev', discord_channel_id: '0987654321', discord_webhook_url: 'https://discord.com/api/webhooks/...' },
-	];
+	let tags = tagApi.getAllTags();
 
 	let showTagEditor = false;
 	let currentTag = { id: '', name: '', discord_channel_id: '', discord_webhook_url: '' };
@@ -23,20 +20,19 @@
 
 	function handleDeleteTag(id: string) {
 		if (confirm('Are you sure you want to delete this tag?')) {
-			tags = tags.filter(tag => tag.id !== id);
+			tagApi.deleteTag(id);
+			tags = tagApi.getAllTags(); // Refresh list
 		}
 	}
 
 	function handleSaveTag(event: CustomEvent) {
 		const savedTag = event.detail;
 		if (savedTag.id) {
-			// Update existing tag
-			tags = tags.map(t => (t.id === savedTag.id ? savedTag : t));
+			tagApi.updateTag(savedTag);
 		} else {
-			// Add new tag
-			savedTag.id = String(tags.length + 1); // Simple ID generation for mock
-			tags = [...tags, savedTag];
+			tagApi.createTag(savedTag);
 		}
+		tags = tagApi.getAllTags(); // Refresh list
 		showTagEditor = false;
 	}
 </script>
