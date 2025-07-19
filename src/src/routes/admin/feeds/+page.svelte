@@ -16,6 +16,11 @@
 		showFeedEditor = true;
 	}
 
+	function openEditFeedModal(feedToEdit: typeof currentFeed) {
+		currentFeed = { ...feedToEdit };
+		showFeedEditor = true;
+	}
+
 	function handleSaveFeed(event: CustomEvent) {
 		const savedFeed = event.detail;
 		if (savedFeed.id) {
@@ -56,7 +61,7 @@
 				</TableCell>
 				<TableCell>{feed.enabled ? 'Yes' : 'No'}</TableCell>
 				<TableCell>
-					<Button size="sm" class="mr-2">Edit</Button>
+					<Button size="sm" class="mr-2" on:click={() => openEditFeedModal(feed)}>Edit</Button>
 					<Button size="sm" color="red">Delete</Button>
 				</TableCell>
 			</TableRow>
