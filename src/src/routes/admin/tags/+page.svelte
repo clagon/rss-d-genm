@@ -16,6 +16,11 @@
 		showTagEditor = true;
 	}
 
+	function openEditTagModal(tagToEdit: typeof currentTag) {
+		currentTag = { ...tagToEdit };
+		showTagEditor = true;
+	}
+
 	function handleSaveTag(event: CustomEvent) {
 		const savedTag = event.detail;
 		if (savedTag.id) {
@@ -48,7 +53,7 @@
 				<TableCell>{tag.name}</TableCell>
 				<TableCell>{tag.discord_channel_id}</TableCell>
 				<TableCell>
-					<Button size="sm" class="mr-2">Edit</Button>
+					<Button size="sm" class="mr-2" on:click={() => openEditTagModal(tag)}>Edit</Button>
 					<Button size="sm" color="red">Delete</Button>
 				</TableCell>
 			</TableRow>
