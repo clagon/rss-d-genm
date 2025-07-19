@@ -6,27 +6,47 @@ interface Feed {
 	enabled: boolean;
 }
 
-let mockFeeds: Feed[] = [
-	{ id: '1', name: 'Google AI Blog', url: 'https://ai.googleblog.com/feeds/posts/default', tags: ['AI', 'Google'], enabled: true },
-	{ id: '2', name: 'Svelte Blog', url: 'https://svelte.dev/blog/rss.xml', tags: ['Svelte', 'WebDev'], enabled: false },
-];
-
-export function getAllFeeds(): Feed[] {
-	return mockFeeds;
+export async function getAllFeeds(): Promise<Feed[]> {
+	const response = await fetch('/api/feeds');
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
+	return response.json();
 }
 
-export function createFeed(newFeed: Omit<Feed, 'id'>): Feed {
-	const id = String(mockFeeds.length > 0 ? Math.max(...mockFeeds.map(f => Number(f.id))) + 1 : 1);
-	const feed = { ...newFeed, id };
-	mockFeeds.push(feed);
-	return feed;
+export async function createFeed(newFeed: Omit<Feed, 'id'>): Promise<Feed> {
+	const response = await fetch('/api/feeds', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(newFeed)
+	});
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
+	return response.json();
 }
 
-export function updateFeed(updatedFeed: Feed): Feed {
-	mockFeeds = mockFeeds.map(feed => (feed.id === updatedFeed.id ? updatedFeed : feed));
-	return updatedFeed;
+export async function updateFeed(updatedFeed: Feed): Promise<Feed> {
+	const response = await fetch(`/api/feeds/${updatedFeed.id}`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(updatedFeed)
+	});
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
+	return response.json();
 }
 
-export function deleteFeed(id: string): void {
-	mockFeeds = mockFeeds.filter(feed => feed.id !== id);
+export async function deleteFeed(id: string): Promise<void> {
+	const response = await fetch(`/api/feeds/${id}`, {
+		method: 'DELETE'
+	});
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
 }

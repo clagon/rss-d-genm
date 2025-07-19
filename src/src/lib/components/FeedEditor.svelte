@@ -6,9 +6,7 @@
 
 	export let open = false;
 	export let feed = { id: '', name: '', url: '', tags: [] as string[], enabled: true };
-
-	// TODO: Replace with actual tags from API
-	const availableTags = ['AI', 'Google', 'Svelte', 'WebDev', 'TypeScript', 'React'];
+	export let availableTags: string[] = [];
 
 	function handleSubmit() {
 		dispatch('save', feed);

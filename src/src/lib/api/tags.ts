@@ -5,27 +5,47 @@ interface Tag {
 	discord_webhook_url: string;
 }
 
-let mockTags: Tag[] = [
-	{ id: '1', name: 'AI', discord_channel_id: '1234567890', discord_webhook_url: 'https://discord.com/api/webhooks/ai' },
-	{ id: '2', name: 'WebDev', discord_channel_id: '0987654321', discord_webhook_url: 'https://discord.com/api/webhooks/webdev' },
-];
-
-export function getAllTags(): Tag[] {
-	return mockTags;
+export async function getAllTags(): Promise<Tag[]> {
+	const response = await fetch('/api/tags');
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
+	return response.json();
 }
 
-export function createTag(newTag: Omit<Tag, 'id'>): Tag {
-	const id = String(mockTags.length > 0 ? Math.max(...mockTags.map(t => Number(t.id))) + 1 : 1);
-	const tag = { ...newTag, id };
-	mockTags.push(tag);
-	return tag;
+export async function createTag(newTag: Omit<Tag, 'id'>): Promise<Tag> {
+	const response = await fetch('/api/tags', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(newTag)
+	});
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
+	return response.json();
 }
 
-export function updateTag(updatedTag: Tag): Tag {
-	mockTags = mockTags.map(tag => (tag.id === updatedTag.id ? updatedTag : tag));
-	return updatedTag;
+export async function updateTag(updatedTag: Tag): Promise<Tag> {
+	const response = await fetch(`/api/tags/${updatedTag.id}`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(updatedTag)
+	});
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
+	return response.json();
 }
 
-export function deleteTag(id: string): void {
-	mockTags = mockTags.filter(tag => tag.id !== id);
+export async function deleteTag(id: string): Promise<void> {
+	const response = await fetch(`/api/tags/${id}`, {
+		method: 'DELETE'
+	});
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
 }

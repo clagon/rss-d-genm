@@ -2,37 +2,59 @@
 	import { Table, TableBody, TableHead, TableHeadCell, TableRow, TableCell, Button, Badge } from 'flowbite-svelte';
 	import FeedEditor from '$lib/components/FeedEditor.svelte';
 	import * as feedApi from '$lib/api/feeds';
+	import * as tagApi from '$lib/api/tags';
+	import { onMount } from 'svelte';
 
-	let feeds = feedApi.getAllFeeds();
+	interface Feed {
+		id: string;
+		name: string;
+		url: string;
+		tags: string[];
+		enabled: boolean;
+	}
 
+	interface Tag {
+		id: string;
+		name: string;
+		discord_channel_id: string;
+		discord_webhook_url: string;
+	}
+
+	let feeds: Feed[] = [];
+	let availableTags: Tag[] = [];
 	let showFeedEditor = false;
-	let currentFeed = { id: '', name: '', url: '', tags: [] as string[], enabled: true };
+	let currentFeed: Feed = { id: '', name: '', url: '', tags: [] as string[], enabled: true };
+
+	onMount(async () => {
+		feeds = await feedApi.getAllFeeds();
+		availableTags = await tagApi.getAllTags();
+	});
 
 	function openNewFeedModal() {
 		currentFeed = { id: '', name: '', url: '', tags: [] as string[], enabled: true };
 		showFeedEditor = true;
 	}
 
-	function openEditFeedModal(feedToEdit: typeof currentFeed) {
+	function openEditFeedModal(feedToEdit: Feed) {
 		currentFeed = { ...feedToEdit };
 		showFeedEditor = true;
 	}
 
-	function handleDeleteFeed(id: string) {
+	async function handleDeleteFeed(id: string) {
 		if (confirm('Are you sure you want to delete this feed?')) {
-			feedApi.deleteFeed(id);
-			feeds = feedApi.getAllFeeds(); // Refresh list
+			await feedApi.deleteFeed(id);
+			feeds = await feedApi.getAllFeeds(); // Refresh list
 		}
 	}
 
-	function handleSaveFeed(event: CustomEvent) {
+	async function handleSaveFeed(event: CustomEvent) {
 		const savedFeed = event.detail;
 		if (savedFeed.id) {
-			feedApi.updateFeed(savedFeed);
+			await feedApi.updateFeed(savedFeed);
 		} else {
-			feedApi.createFeed(savedFeed);
+			await feedApi.createFeed(savedFeed);
 		}
-		feeds = feedApi.getAllFeeds(); // Refresh list
+		feeds = await feedApi.getAllFeeds(); // Refresh list
 		showFeedEditor = false;
 	}
 </script>
@@ -71,4 +93,4 @@
 	</TableBody>
 </Table>
 
-<FeedEditor bind:open={showFeedEditor} bind:feed={currentFeed} on:save={handleSaveFeed} />
+<FeedEditor bind:open={showFeedEditor} bind:feed={currentFeed} availableTags={availableTags.map(t => t.name)} on:save={handleSaveFeed} />

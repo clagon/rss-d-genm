@@ -2,17 +2,11 @@
 	import { List, Input } from 'flowbite-svelte';
 	import FeedListItem from './FeedListItem.svelte';
 
-	// TODO: Replace with actual data
-	const allFeeds = [
-		{ name: 'Google AI Blog', url: 'https://ai.googleblog.com/feeds/posts/default', tags: ['AI', 'Google'] },
-		{ name: 'Svelte Blog', url: 'https://svelte.dev/blog/rss.xml', tags: ['Svelte', 'WebDev'] },
-		{ name: 'TypeScript Blog', url: 'https://devblogs.microsoft.com/typescript/feed/', tags: ['TypeScript', 'WebDev'] },
-		{ name: 'React Blog', url: 'https://react.dev/feed.xml', tags: ['React', 'WebDev'] },
-	];
+	export let feeds: { name: string; url: string; tags: string[] }[];
 
 	let searchTerm = '';
 
-	$: filteredFeeds = allFeeds.filter(feed => {
+	$: filteredFeeds = feeds.filter(feed => {
 		const lowerCaseSearchTerm = searchTerm.toLowerCase();
 		return (
 			feed.name.toLowerCase().includes(lowerCaseSearchTerm) ||

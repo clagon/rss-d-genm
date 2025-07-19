@@ -2,37 +2,48 @@
 	import { Table, TableBody, TableHead, TableHeadCell, TableRow, TableCell, Button } from 'flowbite-svelte';
 	import TagEditor from '$lib/components/TagEditor.svelte';
 	import * as tagApi from '$lib/api/tags';
+	import { onMount } from 'svelte';
 
-	let tags = tagApi.getAllTags();
+	interface Tag {
+		id: string;
+		name: string;
+		discord_channel_id: string;
+		discord_webhook_url: string;
+	}
 
+	let tags: Tag[] = [];
 	let showTagEditor = false;
-	let currentTag = { id: '', name: '', discord_channel_id: '', discord_webhook_url: '' };
+	let currentTag: Tag = { id: '', name: '', discord_channel_id: '', discord_webhook_url: '' };
+
+	onMount(async () => {
+		tags = await tagApi.getAllTags();
+	});
 
 	function openNewTagModal() {
 		currentTag = { id: '', name: '', discord_channel_id: '', discord_webhook_url: '' };
 		showTagEditor = true;
 	}
 
-	function openEditTagModal(tagToEdit: typeof currentTag) {
+	function openEditTagModal(tagToEdit: Tag) {
 		currentTag = { ...tagToEdit };
 		showTagEditor = true;
 	}
 
-	function handleDeleteTag(id: string) {
+	async function handleDeleteTag(id: string) {
 		if (confirm('Are you sure you want to delete this tag?')) {
-			tagApi.deleteTag(id);
-			tags = tagApi.getAllTags(); // Refresh list
+			await tagApi.deleteTag(id);
+			tags = await tagApi.getAllTags(); // Refresh list
 		}
 	}
 
-	function handleSaveTag(event: CustomEvent) {
+	async function handleSaveTag(event: CustomEvent) {
 		const savedTag = event.detail;
 		if (savedTag.id) {
-			tagApi.updateTag(savedTag);
+			await tagApi.updateTag(savedTag);
 		} else {
-			tagApi.createTag(savedTag);
+			await tagApi.createTag(savedTag);
 		}
-		tags = tagApi.getAllTags(); // Refresh list
+		tags = await tagApi.getAllTags(); // Refresh list
 		showTagEditor = false;
 	}
 </script>
