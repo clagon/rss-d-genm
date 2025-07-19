@@ -21,6 +21,12 @@
 		showTagEditor = true;
 	}
 
+	function handleDeleteTag(id: string) {
+		if (confirm('Are you sure you want to delete this tag?')) {
+			tags = tags.filter(tag => tag.id !== id);
+		}
+	}
+
 	function handleSaveTag(event: CustomEvent) {
 		const savedTag = event.detail;
 		if (savedTag.id) {
@@ -54,7 +60,7 @@
 				<TableCell>{tag.discord_channel_id}</TableCell>
 				<TableCell>
 					<Button size="sm" class="mr-2" on:click={() => openEditTagModal(tag)}>Edit</Button>
-					<Button size="sm" color="red">Delete</Button>
+					<Button size="sm" color="red" on:click={() => handleDeleteTag(tag.id)}>Delete</Button>
 				</TableCell>
 			</TableRow>
 		{/each}
