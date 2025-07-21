@@ -1,5 +1,15 @@
 <script lang="ts">
-	import { Button, Badge } from 'flowbite-svelte';
+	import {
+		Button,
+		Badge,
+		Indicator,
+		Table,
+		TableHead,
+		TableHeadCell,
+		TableBody,
+		TableBodyRow,
+		TableBodyCell
+	} from 'flowbite-svelte';
 	import FeedEditor from '$lib/components/FeedEditor.svelte';
 	import * as feedApi from '$lib/api/feeds';
 	import * as tagApi from '$lib/api/tags';
@@ -20,10 +30,16 @@
 		discord_webhook_url: string;
 	}
 
-	let feeds: Feed[] = [];
-	let availableTags: Tag[] = [];
-	let showFeedEditor = false;
-	let currentFeed: Feed = { id: '', name: '', url: '', tags: [] as string[], enabled: true };
+	let feeds: Feed[] = $state([]);
+	let availableTags: Tag[] = $state([]);
+	let showFeedEditor = $state(false);
+	let currentFeed: Feed = $state({
+		id: '',
+		name: '',
+		url: '',
+		tags: [] as string[],
+		enabled: true
+	});
 
 	onMount(async () => {
 		feeds = await feedApi.getAllFeeds();
@@ -65,37 +81,48 @@
 	<Button onclick={openNewFeedModal}>Add New Feed</Button>
 </div>
 
-<table>
-	<thead>
-		<tr>
-			<th>Feed Name</th>
-			<th>URL</th>
-			<th>Tags</th>
-			<th>Enabled</th>
-			<th>Actions</th>
-		</tr>
-	</thead>
-	<tbody>
+<Table>
+	<TableHead>
+		<TableHeadCell>Name</TableHeadCell>
+		<TableHeadCell>URL</TableHeadCell>
+		<TableHeadCell>Tags</TableHeadCell>
+		<TableHeadCell>Enabled</TableHeadCell>
+		<TableHeadCell>Actions</TableHeadCell>
+	</TableHead>
+	<TableBody>
 		{#each feeds as feed}
-			<tr>
-				<td class="feed-name">{feed.name}</td>
-				<td>{feed.url}</td>
-				<td>
-					{#each feed.tags as tag}
-						<Badge>{tag}</Badge>
-					{/each}
-				</td>
-				<td>{feed.enabled ? 'Yes' : 'No'}</td>
-				<td>
+			<TableBodyRow>
+				<TableBodyCell class="feed-name">{feed.name}</TableBodyCell>
+				<TableBodyCell>{feed.url}</TableBodyCell>
+				<TableBodyCell>
+					<span class="tag-container">
+						{#each feed.tags as tag}
+							<Badge>{tag}</Badge>
+						{/each}
+					</span>
+				</TableBodyCell>
+				<TableBodyCell>
+					<div class="feed-enabled">
+						<Indicator color={feed.enabled ? 'green' : 'red'} /><span
+							>{feed.enabled ? 'Enabled' : 'Disabled'}</span
+						>
+					</div>
+				</TableBodyCell>
+				<TableBodyCell>
 					<Button size="sm" class="mr-2" onclick={() => openEditFeedModal(feed)}>Edit</Button>
 					<Button size="sm" color="red" onclick={() => handleDeleteFeed(feed.id)}>Delete</Button>
-				</td>
-			</tr>
+				</TableBodyCell>
+			</TableBodyRow>
 		{/each}
-	</tbody>
-</table>
+	</TableBody>
+</Table>
 
-<FeedEditor bind:open={showFeedEditor} bind:feed={currentFeed} availableTags={availableTags.map(t => t.name)} on:save={handleSaveFeed} />
+<FeedEditor
+	bind:open={showFeedEditor}
+	bind:feed={currentFeed}
+	availableTags={availableTags.map((t) => t.name)}
+	on:save={handleSaveFeed}
+/>
 
 <style>
 	h1 {
@@ -125,7 +152,8 @@
 		background-color: #374151;
 		color: #9ca3af;
 	}
-	th, td {
+	th,
+	td {
 		padding: 0.75rem 1.5rem;
 	}
 	tr {
@@ -136,12 +164,22 @@
 		background-color: #1f2937;
 		border-color: #374151;
 	}
-	.feed-name {
+	:global(.feed-name) {
 		font-weight: 500;
 		color: #111827;
 		white-space: nowrap;
 	}
 	.dark .feed-name {
 		color: #fff;
+	}
+	.tag-container {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+	.feed-enabled {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 	}
 </style>

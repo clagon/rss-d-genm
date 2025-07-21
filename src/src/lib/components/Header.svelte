@@ -1,26 +1,17 @@
 <script lang="ts">
-	import { Navbar, NavBrand, NavLi, NavUl } from 'flowbite-svelte';
+	import { page } from '$app/state';
+	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
+	let activeUrl = $derived(page.url.pathname);
 </script>
 
-<Navbar>
+<Navbar fluid={true}>
 	<NavBrand href="/">
-		<span class="nav-title">RSS-D-GENM</span>
+		<span class="nowrap self-center text-xl font-bold dark:text-white">RSS-D-GENM</span>
 	</NavBrand>
-	<NavUl>
+	<NavHamburger />
+	<NavUl {activeUrl}>
 		<NavLi href="/">Feeds</NavLi>
 		<NavLi href="/admin/feeds">Admin Feeds</NavLi>
 		<NavLi href="/admin/tags">Admin Tags</NavLi>
 	</NavUl>
 </Navbar>
-
-<style>
-	.nav-title {
-		align-self: center;
-		white-space: nowrap;
-		font-size: 1.25rem;
-		font-weight: 600;
-	}
-	.dark .nav-title {
-		color: #fff;
-	}
-</style>
