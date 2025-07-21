@@ -91,7 +91,6 @@ def main():
                             webhook_url, parsed_feed,  article, feed_name)
                         print(
                             f"Posted article '{article.guid}' to {tag_info['tags']['name']}.")
-                    break
 
                 # Update last_posted_guid
                 new_last_posted_guid = new_articles[-1].guid
