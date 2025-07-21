@@ -16,7 +16,7 @@
 	});
 </script>
 
-<div class="mb-4">
+<div class="search-container">
 	<Input type="text" placeholder="Search feeds..." bind:value={searchTerm} />
 </div>
 
@@ -25,4 +25,10 @@
 		<FeedListItem {feed} />
 	{/each}
 </List>
+
+<style>
+	.search-container {
+		margin-bottom: 1rem;
+	}
+</style>
 

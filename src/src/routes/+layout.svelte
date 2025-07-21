@@ -7,8 +7,12 @@
 
 <Header />
 
-<main class="p-4">
+<main>
 	{@render children()}
 </main>
 
-
+<style>
+	main {
+		padding: 1rem;
+	}
+</style>

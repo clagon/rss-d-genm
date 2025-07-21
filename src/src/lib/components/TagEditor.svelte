@@ -15,21 +15,41 @@
 
 <Modal bind:open={open} size="lg" autoclose>
 	<form on:submit|preventDefault={handleSubmit}>
-		<h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Add/Edit Tag</h3>
-		<div class="grid gap-4 mb-4">
+		<h3>Add/Edit Tag</h3>
+		<div class="form-grid">
 			<div>
-				<Label for="name" class="mb-2">Tag Name</Label>
+				<Label for="name" class="form-label">Tag Name</Label>
 				<Input type="text" id="name" placeholder="Enter tag name" bind:value={tag.name} required />
 			</div>
 			<div>
-				<Label for="channelId" class="mb-2">Discord Channel ID</Label>
+				<Label for="channelId" class="form-label">Discord Channel ID</Label>
 				<Input type="text" id="channelId" placeholder="Enter Discord Channel ID" bind:value={tag.discord_channel_id} required />
 			</div>
 			<div>
-				<Label for="webhookUrl" class="mb-2">Discord Webhook URL</Label>
+				<Label for="webhookUrl" class="form-label">Discord Webhook URL</Label>
 				<Input type="url" id="webhookUrl" placeholder="Enter Discord Webhook URL" bind:value={tag.discord_webhook_url} required />
 			</div>
 		</div>
 		<Button type="submit">Save Tag</Button>
 	</form>
 </Modal>
+
+<style>
+	h3 {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: #1a202c;
+		margin-bottom: 1rem;
+	}
+	.dark h3 {
+		color: #fff;
+	}
+	.form-grid {
+		display: grid;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+	.form-label {
+		margin-bottom: 0.5rem;
+	}
+</style>

@@ -18,5 +18,13 @@
 	});
 </script>
 
-<h1 class="text-2xl font-bold mb-4">RSS Feeds</h1>
+<h1>RSS Feeds</h1>
 <FeedList {feeds} />
+
+<style>
+	h1 {
+		font-size: 1.5rem;
+		font-weight: 700;
+		margin-bottom: 1rem;
+	}
+</style>

@@ -16,19 +16,19 @@
 
 <Modal bind:open={open} size="lg" autoclose>
 	<form on:submit|preventDefault={handleSubmit}>
-		<h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Add/Edit Feed</h3>
-		<div class="grid gap-4 mb-4">
+		<h3>Add/Edit Feed</h3>
+		<div class="form-grid">
 			<div>
-				<Label for="name" class="mb-2">Feed Name</Label>
+				<Label for="name" class="form-label">Feed Name</Label>
 				<Input type="text" id="name" placeholder="Enter feed name" bind:value={feed.name} required />
 			</div>
 			<div>
-				<Label for="url" class="mb-2">Feed URL</Label>
+				<Label for="url" class="form-label">Feed URL</Label>
 				<Input type="url" id="url" placeholder="Enter feed URL" bind:value={feed.url} required />
 			</div>
 			<div>
-				<Label class="mb-2">Tags</Label>
-				<div class="flex flex-wrap gap-2">
+				<Label class="form-label">Tags</Label>
+				<div class="tag-container">
 					{#each availableTags as tagOption}
 						<Checkbox bind:group={feed.tags} value={tagOption}>{tagOption}</Checkbox>
 					{/each}
@@ -41,3 +41,28 @@
 		<Button type="submit">Save Feed</Button>
 	</form>
 </Modal>
+
+<style>
+	h3 {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: #1a202c;
+		margin-bottom: 1rem;
+	}
+	.dark h3 {
+		color: #fff;
+	}
+	.form-grid {
+		display: grid;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+	.form-label {
+		margin-bottom: 0.5rem;
+	}
+	.tag-container {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+</style>

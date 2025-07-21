@@ -6,9 +6,7 @@ import path from 'path';
 export default defineConfig({
 	root: path.resolve(__dirname, '..'),
 	plugins: [tailwindcss(), sveltekit()],
-	optimizeDeps: {
-		include: ['flowbite-svelte']
-	},
+	optimizeDeps: { include: ['flowbite-svelte'] },
 	test: {
 		projects: [
 			{
