@@ -1,6 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_GUILD_ID } from '$env/static/private';
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
+import { env } from '$env/dynamic/private';
 import { createClient } from '@supabase/supabase-js';
 
 export async function GET({ url, cookies }) {
@@ -10,7 +9,7 @@ export async function GET({ url, cookies }) {
 		throw redirect(302, '/');
 	}
 
-	const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
+	const supabase = createClient(env.PUBLIC_SUPABASE_URL, env.PUBLIC_SUPABASE_ANON_KEY);
 
 	try {
 		// Exchange code for access token
@@ -20,8 +19,8 @@ export async function GET({ url, cookies }) {
 				'Content-Type': 'application/x-www-form-urlencoded'
 			},
 			body: new URLSearchParams({
-				client_id: DISCORD_CLIENT_ID,
-				client_secret: DISCORD_CLIENT_SECRET,
+				client_id: env.DISCORD_CLIENT_ID,
+				client_secret: env.DISCORD_CLIENT_SECRET,
 				grant_type: 'authorization_code',
 				code,
 				redirect_uri: 'http://localhost:5173/api/auth/callback'
@@ -66,7 +65,7 @@ export async function GET({ url, cookies }) {
 			throw redirect(302, '/');
 		}
 
-		const isInGuild = guildsData.some((guild: { id: string }) => guild.id === DISCORD_GUILD_ID);
+		const isInGuild = guildsData.some((guild: { id: string }) => guild.id === env.DISCORD_GUILD_ID);
 
 		if (!isInGuild) {
 			console.warn('User not in required Discord guild.');

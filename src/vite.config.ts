@@ -1,9 +1,14 @@
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import path from 'path';
 
 export default defineConfig({
+	root: path.resolve(__dirname, '..'),
 	plugins: [tailwindcss(), sveltekit()],
+	optimizeDeps: {
+		include: ['flowbite-svelte']
+	},
 	test: {
 		projects: [
 			{

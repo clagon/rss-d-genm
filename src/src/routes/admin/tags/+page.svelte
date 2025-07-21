@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Table, TableBody, TableHead, TableHeadCell, TableRow, TableCell, Button } from 'flowbite-svelte';
+	import { Button } from 'flowbite-svelte';
 	import TagEditor from '$lib/components/TagEditor.svelte';
 	import * as tagApi from '$lib/api/tags';
 	import { onMount } from 'svelte';
@@ -54,24 +54,26 @@
 	<Button on:click={openNewTagModal}>Add New Tag</Button>
 </div>
 
-<Table>
-	<TableHead>
-		<TableHeadCell>Tag Name</TableHeadCell>
-		<TableHeadCell>Discord Channel ID</TableHeadCell>
-		<TableHeadCell>Actions</TableHeadCell>
-	</TableHead>
-	<TableBody>
+<table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+	<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+		<tr>
+			<th scope="col" class="px-6 py-3">Tag Name</th>
+			<th scope="col" class="px-6 py-3">Discord Channel ID</th>
+			<th scope="col" class="px-6 py-3">Actions</th>
+		</tr>
+	</thead>
+	<tbody>
 		{#each tags as tag}
-			<TableRow>
-				<TableCell>{tag.name}</TableCell>
-				<TableCell>{tag.discord_channel_id}</TableCell>
-				<TableCell>
+			<tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+				<td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{tag.name}</td>
+				<td class="px-6 py-4">{tag.discord_channel_id}</td>
+				<td class="px-6 py-4">
 					<Button size="sm" class="mr-2" on:click={() => openEditTagModal(tag)}>Edit</Button>
 					<Button size="sm" color="red" on:click={() => handleDeleteTag(tag.id)}>Delete</Button>
-				</TableCell>
-			</TableRow>
+				</td>
+			</tr>
 		{/each}
-	</TableBody>
-</Table>
+	</tbody>
+</table>
 
 <TagEditor bind:open={showTagEditor} bind:tag={currentTag} on:save={handleSaveTag} />

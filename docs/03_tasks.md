@@ -40,5 +40,5 @@
 - [x] 3. タグCRUD用のAPIルートを実装し、Supabaseに接続
 - [x] 4. フィードCRUD用のAPIルートを実装し、Supabaseに接続
 - [x] 5. フロントエンドのモックAPIを実際のSupabase呼び出しに置き換え
-- [ ] 6. GitHub Action用のPythonスクリプトの作成
-- [ ] 7. GitHub Actionsワークフローの作成
+- [x] 6. GitHub Action用のPythonスクリプトの作成
+- [x] 7. GitHub Actionsワークフローの作成
