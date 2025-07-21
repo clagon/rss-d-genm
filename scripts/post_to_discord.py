@@ -1,7 +1,10 @@
+from datetime import datetime
 import os
 import feedparser
 import requests
 from supabase import create_client, Client
+from urllib.parse import urlparse
+from bs4 import BeautifulSoup
 
 # Supabase credentials
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
@@ -10,22 +13,35 @@ SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 
-def post_to_discord(webhook_url, title, link, description):
-    data = {
-        "embeds": [
-            {
-                "title": title,
-                "description": description,
-                "url": link,
-                "color": 5814783  # Discord embed color (e.g., blue)
-            }
-        ]
+def post_to_discord(webhook_url, feed, article, feed_name):
+    username = urlparse(article.link).netloc
+    avatar_url = f"https://www.google.com/s2/favicons?sz=64&domain={username}"
+    soup = BeautifulSoup(article.summary, 'html.parser')
+    date = datetime(*article.published_parsed[:7])
+    embed = {
+        "color": 5814783,  # Discord embed color (e.g., blue)
+        "author": {
+            "name": article.title,
+            "url": article.link,
+        },
+        "description": soup.get_text(),
+        "footer": {"text": feed_name, "icon_url": avatar_url},
+        "timestamp": date.isoformat(),
     }
+    data = {
+        "username": username,
+        "avatar_url": feed.image.href if hasattr(feed, 'image') else avatar_url,
+        "embeds": [embed]
+    }
+    if len(article.links) > 1 and article.links[1].type.startswith("image/png"):
+        data["embeds"][0]["image"] = {
+            "url": article.links[1].href
+        }
     try:
         response = requests.post(webhook_url, json=data)
         response.raise_for_status()  # Raise an exception for HTTP errors
-        print(f"Successfully posted {title} to Discord.")
     except requests.exceptions.RequestException as e:
+        print(response.content)
         print(f"Error posting to Discord: {e}")
 
 
@@ -54,12 +70,12 @@ def main():
             print(f"Processing feed: {feed_name} ({feed_url})")
 
             try:
-                parsed_feed = feedparser.parse(feed_url)
+                parsed_feed = feedparser.parse(feed_url, sanitize_html=False)
             except Exception as e:
                 print(f"Error parsing feed {feed_name}: {e}")
                 continue
 
-            new_articles = []
+            new_articles: list[feedparser.FeedParserDict] = []
             for entry in reversed(parsed_feed.entries):
                 if entry.guid == last_posted_guid:
                     break
@@ -69,13 +85,13 @@ def main():
                 print(
                     f"Found {len(new_articles)} new articles for {feed_name}.")
                 for article in new_articles:
-                    title = article.title
-                    link = article.link
-                    description = article.summary if hasattr(
-                        article, 'summary') else article.title
                     for tag_info in feed_tags:
                         webhook_url = tag_info['tags']['discord_webhook_url']
-                        post_to_discord(webhook_url, title, link, description)
+                        post_to_discord(
+                            webhook_url, parsed_feed,  article, feed_name)
+                        print(
+                            f"Posted article '{article.guid}' to {tag_info['tags']['name']}.")
+                    break
 
                 # Update last_posted_guid
                 new_last_posted_guid = new_articles[-1].guid
@@ -86,7 +102,8 @@ def main():
                         f"Updated last_posted_guid for {feed_name} to {new_last_posted_guid}")
                 else:
                     print(
-                        f"Failed to update last_posted_guid for {feed_name}: {update_response.error}")
+                        f"Failed to update last_posted_guid for {feed_name}")
+
             else:
                 print(f"No new articles for {feed_name}.")
 
