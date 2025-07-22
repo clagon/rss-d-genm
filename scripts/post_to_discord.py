@@ -6,6 +6,8 @@ from supabase import create_client, Client
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
+import time
+
 # Supabase credentials
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -16,7 +18,9 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 def post_to_discord(webhook_url, feed, article, feed_name):
     username = urlparse(article.link).netloc
     avatar_url = f"https://www.google.com/s2/favicons?sz=64&domain={username}"
-    soup = BeautifulSoup(article.summary, 'html.parser')
+    if not hasattr(article, "summary"):
+        article.summary = "No summary available for this article."
+    soup = BeautifulSoup(article.summary, "html.parser")
     date = datetime(*article.published_parsed[:7])
     embed = {
         "color": 5814783,  # Discord embed color (e.g., blue)
@@ -30,16 +34,15 @@ def post_to_discord(webhook_url, feed, article, feed_name):
     }
     data = {
         "username": username,
-        "avatar_url": feed.image.href if hasattr(feed, 'image') else avatar_url,
-        "embeds": [embed]
+        "avatar_url": feed.image.href if hasattr(feed, "image") else avatar_url,
+        "embeds": [embed],
     }
     if len(article.links) > 1 and article.links[1].type.startswith("image/png"):
-        data["embeds"][0]["image"] = {
-            "url": article.links[1].href
-        }
+        data["embeds"][0]["image"] = {"url": article.links[1].href}
     try:
         response = requests.post(webhook_url, json=data)
         response.raise_for_status()  # Raise an exception for HTTP errors
+        time.sleep(int(response.headers.get("x-ratelimit-reset-after", 1)))
     except requests.exceptions.RequestException as e:
         print(response.content)
         print(f"Error posting to Discord: {e}")
@@ -52,8 +55,14 @@ def main():
         # Using rpc to call a stored procedure that joins feeds and tags
         # Or, fetch feeds and then tags separately and join in Python
         # For simplicity, let's fetch feeds and then their tags
-        response = supabase.table('feeds').select(
-            'id, name, url, last_posted_guid, feed_tags(tags(name, discord_webhook_url))').eq('enabled', True).execute()
+        response = (
+            supabase.table("feeds")
+            .select(
+                "id, name, url, last_posted_guid, feed_tags(tags(name, discord_webhook_url))"
+            )
+            .eq("enabled", True)
+            .execute()
+        )
         feeds_data = response.data
 
         if not feeds_data:
@@ -61,11 +70,11 @@ def main():
             return
 
         for feed_entry in feeds_data:
-            feed_id = feed_entry['id']
-            feed_name = feed_entry['name']
-            feed_url = feed_entry['url']
-            last_posted_guid = feed_entry['last_posted_guid']
-            feed_tags = feed_entry['feed_tags']
+            feed_id = feed_entry["id"]
+            feed_name = feed_entry["name"]
+            feed_url = feed_entry["url"]
+            last_posted_guid = feed_entry["last_posted_guid"]
+            feed_tags = feed_entry["feed_tags"]
 
             print(f"Processing feed: {feed_name} ({feed_url})")
 
@@ -86,22 +95,27 @@ def main():
                     f"Found {len(new_articles)} new articles for {feed_name}.")
                 for article in new_articles:
                     for tag_info in feed_tags:
-                        webhook_url = tag_info['tags']['discord_webhook_url']
+                        webhook_url = tag_info["tags"]["discord_webhook_url"]
                         post_to_discord(
-                            webhook_url, parsed_feed,  article, feed_name)
+                            webhook_url, parsed_feed, article, feed_name)
                         print(
-                            f"Posted article '{article.guid}' to {tag_info['tags']['name']}.")
+                            f"Posted article '{article.guid}' to {tag_info['tags']['name']}."
+                        )
 
                 # Update last_posted_guid
                 new_last_posted_guid = new_articles[-1].guid
-                update_response = supabase.table('feeds').update(
-                    {'last_posted_guid': new_last_posted_guid}).eq('id', feed_id).execute()
+                update_response = (
+                    supabase.table("feeds")
+                    .update({"last_posted_guid": new_last_posted_guid})
+                    .eq("id", feed_id)
+                    .execute()
+                )
                 if update_response.data:
                     print(
-                        f"Updated last_posted_guid for {feed_name} to {new_last_posted_guid}")
+                        f"Updated last_posted_guid for {feed_name} to {new_last_posted_guid}"
+                    )
                 else:
-                    print(
-                        f"Failed to update last_posted_guid for {feed_name}")
+                    print(f"Failed to update last_posted_guid for {feed_name}")
 
             else:
                 print(f"No new articles for {feed_name}.")
