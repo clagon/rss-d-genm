@@ -91,19 +91,17 @@ def main():
                 new_articles.append(entry)
 
             if new_articles:
-                print(
-                    f"Found {len(new_articles)} new articles for {feed_name}.")
+                print(f"Found {len(new_articles)} new articles for {feed_name}.")
                 for article in new_articles:
                     for tag_info in feed_tags:
                         webhook_url = tag_info["tags"]["discord_webhook_url"]
-                        post_to_discord(
-                            webhook_url, parsed_feed, article, feed_name)
+                        post_to_discord(webhook_url, parsed_feed, article, feed_name)
                         print(
                             f"Posted article '{article.guid}' to {tag_info['tags']['name']}."
                         )
 
                 # Update last_posted_guid
-                new_last_posted_guid = new_articles[-1].guid
+                new_last_posted_guid = new_articles[0].guid
                 update_response = (
                     supabase.table("feeds")
                     .update({"last_posted_guid": new_last_posted_guid})
