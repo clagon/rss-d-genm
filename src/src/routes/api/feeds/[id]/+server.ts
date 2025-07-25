@@ -1,10 +1,13 @@
 import { json } from '@sveltejs/kit';
-import { supabase } from '$lib/supabaseClient';
 
-export async function GET({ params }) {
+export async function GET({ params, locals: { supabase } }) {
 	const { id } = params;
 
-	const { data, error } = await supabase.from('feeds').select('*, feed_tags(tags(name))').eq('id', id).single();
+	const { data, error } = await supabase
+		.from('feeds')
+		.select('*, feed_tags(tags(name))')
+		.eq('id', id)
+		.single();
 
 	if (error) {
 		return json({ error: error.message }, { status: 500 });
@@ -16,13 +19,13 @@ export async function GET({ params }) {
 
 	const feed = {
 		...data,
-		tags: data.feed_tags.map((ft: any) => ft.tags.name)
+		tags: data.feed_tags.map((ft: { tags: { name: string } }) => ft.tags.name)
 	};
 
 	return json(feed);
 }
 
-export async function PUT({ params, request }) {
+export async function PUT({ params, request, locals: { supabase } }) {
 	const { id } = params;
 	const { name, url, tags, enabled } = await request.json();
 
@@ -86,13 +89,13 @@ export async function PUT({ params, request }) {
 
 	const finalFeed = {
 		...finalFeedData,
-		tags: finalFeedData.feed_tags.map((ft: any) => ft.tags.name)
+		tags: finalFeedData.feed_tags.map((ft: { tags: { name: string } }) => ft.tags.name)
 	};
 
 	return json(finalFeed);
 }
 
-export async function DELETE({ params }) {
+export async function DELETE({ params, locals: { supabase } }) {
 	const { id } = params;
 
 	const { error } = await supabase.from('feeds').delete().eq('id', id);

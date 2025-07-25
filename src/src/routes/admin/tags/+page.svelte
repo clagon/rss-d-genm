@@ -63,7 +63,7 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#each tags as tag}
+		{#each tags as tag (tag.id)}
 			<tr>
 				<td class="tag-name">{tag.name}</td>
 				<td>{tag.discord_channel_id}</td>
@@ -106,7 +106,8 @@
 		background-color: #374151;
 		color: #9ca3af;
 	}
-	th, td {
+	th,
+	td {
 		padding: 0.75rem 1.5rem;
 	}
 	tr {

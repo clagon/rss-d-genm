@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
-import { supabase } from '$lib/supabaseClient';
 
-export async function GET({ params }) {
+export async function GET({ params, locals: { supabase } }) {
 	const { id } = params;
 
 	const { data, error } = await supabase.from('tags').select('*').eq('id', id).single();
@@ -17,7 +16,7 @@ export async function GET({ params }) {
 	return json(data);
 }
 
-export async function PUT({ params, request }) {
+export async function PUT({ params, request, locals: { supabase } }) {
 	const { id } = params;
 	const { name, discord_channel_id, discord_webhook_url } = await request.json();
 
@@ -38,7 +37,7 @@ export async function PUT({ params, request }) {
 	return json(data[0]);
 }
 
-export async function DELETE({ params }) {
+export async function DELETE({ params, locals: { supabase } }) {
 	const { id } = params;
 
 	const { error } = await supabase.from('tags').delete().eq('id', id);

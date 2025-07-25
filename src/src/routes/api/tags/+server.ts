@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
-import { supabase } from '$lib/supabaseClient';
 
-export async function GET() {
+export async function GET({ locals: { supabase } }) {
 	const { data, error } = await supabase.from('tags').select('*');
 
 	if (error) {
@@ -11,7 +10,7 @@ export async function GET() {
 	return json(data);
 }
 
-export async function POST({ request }) {
+export async function POST({ request, locals: { supabase } }) {
 	const { name, discord_channel_id, discord_webhook_url } = await request.json();
 
 	const { data, error } = await supabase

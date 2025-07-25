@@ -90,13 +90,13 @@
 		<TableHeadCell>Actions</TableHeadCell>
 	</TableHead>
 	<TableBody>
-		{#each feeds as feed}
+		{#each feeds as feed (feed.id)}
 			<TableBodyRow>
 				<TableBodyCell class="feed-name">{feed.name}</TableBodyCell>
 				<TableBodyCell>{feed.url}</TableBodyCell>
 				<TableBodyCell>
 					<span class="tag-container">
-						{#each feed.tags as tag}
+						{#each feed.tags as tag (tag)}
 							<Badge>{tag}</Badge>
 						{/each}
 					</span>

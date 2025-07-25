@@ -21,12 +21,12 @@
 
 <List tag="dl">
 	<Gallery class="grid grid-cols-[repeat(auto-fill,minmax(20rem,1fr))] gap-6">
-		{#each filteredFeeds as feed}
+		{#each filteredFeeds as feed (feed.url)}
 			<div class="rounded-lg border border-gray-300 p-4">
 				<p>{feed.name}</p>
 				<p>{feed.url}</p>
 				<span class="mt-2 flex flex-wrap gap-2">
-					{#each feed.tags as tag}
+					{#each feed.tags as tag (tag)}
 						<Badge>{tag}</Badge>
 					{/each}
 				</span>

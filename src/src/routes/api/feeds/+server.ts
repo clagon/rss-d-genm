@@ -1,22 +1,29 @@
 import { json } from '@sveltejs/kit';
-import { supabase } from '$lib/supabaseClient';
 
-export async function GET() {
+interface Feed {
+	id: string;
+	name: string;
+	url: string;
+	enabled: boolean;
+	feed_tags: { tags: { name: string } }[];
+}
+
+export async function GET({ locals: { supabase } }) {
 	const { data, error } = await supabase.from('feeds').select('*, feed_tags(tags(name))');
 
 	if (error) {
 		return json({ error: error.message }, { status: 500 });
 	}
 
-	const feeds = data.map((feed: any) => ({
+	const feeds = data.map((feed: Feed) => ({
 		...feed,
-		tags: feed.feed_tags.map((ft: any) => ft.tags.name)
+		tags: feed.feed_tags.map((ft) => ft.tags.name)
 	}));
 
 	return json(feeds);
 }
 
-export async function POST({ request }) {
+export async function POST({ request, locals: { supabase } }) {
 	const { name, url, tags, enabled } = await request.json();
 
 	const { data: feedData, error: feedError } = await supabase
@@ -70,7 +77,7 @@ export async function POST({ request }) {
 
 	const finalFeed = {
 		...finalFeedData,
-		tags: finalFeedData.feed_tags.map((ft: any) => ft.tags.name)
+		tags: finalFeedData.feed_tags.map((ft: { tags: { name: string } }) => ft.tags.name)
 	};
 
 	return json(finalFeed, { status: 201 });

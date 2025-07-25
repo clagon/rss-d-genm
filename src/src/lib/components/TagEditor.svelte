@@ -13,7 +13,7 @@
 	}
 </script>
 
-<Modal bind:open={open} size="lg" autoclose>
+<Modal bind:open size="lg" autoclose>
 	<form on:submit|preventDefault={handleSubmit}>
 		<h3>Add/Edit Tag</h3>
 		<div class="form-grid">
@@ -23,11 +23,23 @@
 			</div>
 			<div>
 				<Label for="channelId" class="form-label">Discord Channel ID</Label>
-				<Input type="text" id="channelId" placeholder="Enter Discord Channel ID" bind:value={tag.discord_channel_id} required />
+				<Input
+					type="text"
+					id="channelId"
+					placeholder="Enter Discord Channel ID"
+					bind:value={tag.discord_channel_id}
+					required
+				/>
 			</div>
 			<div>
 				<Label for="webhookUrl" class="form-label">Discord Webhook URL</Label>
-				<Input type="url" id="webhookUrl" placeholder="Enter Discord Webhook URL" bind:value={tag.discord_webhook_url} required />
+				<Input
+					type="url"
+					id="webhookUrl"
+					placeholder="Enter Discord Webhook URL"
+					bind:value={tag.discord_webhook_url}
+					required
+				/>
 			</div>
 		</div>
 		<Button type="submit">Save Tag</Button>
