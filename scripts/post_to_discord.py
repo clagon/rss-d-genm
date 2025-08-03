@@ -200,7 +200,7 @@ def main():
                     article["article"],
                     article["feed_name"],
                 )
-                print(f"Posted article '{article["article"].guid}' to {tag}.")
+                print(f"Posted article '{article['article'].guid}' to {tag}.")
 
         # === サマリー投稿 ===
         post_summary(feeds_to_post)
