@@ -26,4 +26,5 @@ jobs:
               env:
                   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
                   SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+                  DISCORD_WEBHOOK_URL_RSS_LOG: ${{ secrets.DISCORD_WEBHOOK_URL_RSS_LOG }}
               run: python scripts/post_to_discord.py
