@@ -1,10 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 import feedparser
 import requests
 from supabase import create_client, Client
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
+from functools import reduce
 
 import time
 
@@ -12,10 +13,15 @@ import time
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+DISCORD_WEBHOOK_URL_RSS_LOG = os.environ.get("DISCORD_WEBHOOK_URL_RSS_LOG")
+
+if SUPABASE_URL is None or SUPABASE_SERVICE_ROLE_KEY is None:
+    Exception("creds is not set")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)  # type: ignore
 
 
-def post_to_discord(webhook_url, feed, article, feed_name):
+def post_to_discord(webhook_url, image, article, feed_name):
     username = urlparse(article.link).netloc
     avatar_url = f"https://www.google.com/s2/favicons?sz=64&domain={username}"
     if not hasattr(article, "summary"):
@@ -34,7 +40,7 @@ def post_to_discord(webhook_url, feed, article, feed_name):
     }
     data = {
         "username": username,
-        "avatar_url": feed.image.href if hasattr(feed, "image") else avatar_url,
+        "avatar_url": image or avatar_url,
         "embeds": [embed],
     }
     if len(article.links) > 1 and article.links[1].type.startswith("image/png"):
@@ -48,75 +54,181 @@ def post_to_discord(webhook_url, feed, article, feed_name):
         print(f"Error posting to Discord: {e}")
 
 
+def post_summary(feeds_to_post: dict):
+    total_cnt = sum(len(feeds_to_post[key]) for key in feeds_to_post.keys())
+    body = f""
+    for tag in feeds_to_post.keys():
+        if (cnt := len(feeds_to_post[tag])) > 0:
+            body += f"\n{tag}：{cnt}件"
+    embed = {
+        "color": 65280,  # 00ff00
+        "author": {
+            "name": (
+                f"{total_cnt}件の記事を投稿しました"
+                if total_cnt > 0
+                else "処理が完了しました"
+            ),
+        },
+        "description": body,
+        "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+    }
+    data = {
+        "username": "RSS Bot",
+        "avatar_url": "https://cdn.discordapp.com/embed/avatars/0.png",
+        "embeds": [embed],
+    }
+    try:
+        response = requests.post(DISCORD_WEBHOOK_URL_RSS_LOG, json=data)  # type: ignore
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        time.sleep(int(response.headers.get("x-ratelimit-reset-after", 1)))
+    except requests.exceptions.RequestException as e:
+        print(response.content)
+        print(f"Error posting to Discord: {e}")
+
+
 def main():
     print("Starting RSS to Discord bot...")
     try:
-        # Fetch enabled feeds and their associated tags
-        # Using rpc to call a stored procedure that joins feeds and tags
-        # Or, fetch feeds and then tags separately and join in Python
-        # For simplicity, let's fetch feeds and then their tags
+
+        # === 管理用変数初期化 ===
+        # タグごとの送信するフィード配列
+        feeds_to_post = {}
+
+        # タグごとの送信するフィードに登録済のURL
+        # 同じ記事が複数送信されるのの防止用（記事が複数フィードから配信された場合の対策）
+        added_urls = {}
+
+        # フィードごとの最終投稿記事
+        last_posted_guids = {}
+
+        #  === DBからフィード情報取得 ===
         response = (
             supabase.table("feeds")
-            .select(
-                "id, name, url, last_posted_guid, feed_tags(tags(name, discord_webhook_url))"
-            )
+            .select("id, name, url, last_posted_guid, feed_tags(tags(name))")
             .eq("enabled", True)
             .execute()
         )
         feeds_data = response.data
 
+        #  === DBからタグ情報取得 ===
+        response = supabase.table("tags").select("name, discord_webhook_url").execute()
+        tags_data = response.data
+
+        tag_url = {}
+        for tag_entry in tags_data:
+            tag_url[tag_entry["name"]] = tag_entry["discord_webhook_url"]
+
         if not feeds_data:
             print("No enabled feeds found.")
             return
 
+        # === フィードごとの処理 ===
         for feed_entry in feeds_data:
+
+            # === 初期処理 ===
+
+            # フィードデータ取得
             feed_id = feed_entry["id"]
             feed_name = feed_entry["name"]
             feed_url = feed_entry["url"]
             last_posted_guid = feed_entry["last_posted_guid"]
             feed_tags = feed_entry["feed_tags"]
 
-            print(f"Processing feed: {feed_name} ({feed_url})")
+            # 配列初期化
+            for feed_tag in feed_tags:
+                if feeds_to_post.get(feed_tag["tags"]["name"]) is None:
+                    feeds_to_post[feed_tag["tags"]["name"]] = []
+                    added_urls[feed_tag["tags"]["name"]] = set()
 
+            print(f"======\n{feed_name} ({feed_url})\n------")
+
+            # === フィードのパース ===
             try:
                 parsed_feed = feedparser.parse(feed_url, sanitize_html=False)
             except Exception as e:
                 print(f"Error parsing feed {feed_name}: {e}")
                 continue
 
+            # === 新着記事取得 ===
             new_articles: list[feedparser.FeedParserDict] = []
-            for entry in reversed(parsed_feed.entries):
+            entries = sorted(parsed_feed.entries, key=lambda x: x.published_parsed)
+
+            for entry in entries:
                 if entry.guid == last_posted_guid:
                     break
                 new_articles.append(entry)
 
             if new_articles:
                 print(f"Found {len(new_articles)} new articles for {feed_name}.")
+
+                last_posted_guids[feed_id] = new_articles[0].guid
+
+                # === 投稿 ===
                 for article in new_articles:
                     for tag_info in feed_tags:
-                        webhook_url = tag_info["tags"]["discord_webhook_url"]
-                        post_to_discord(webhook_url, parsed_feed, article, feed_name)
-                        print(
-                            f"Posted article '{article.guid}' to {tag_info['tags']['name']}."
+                        if article.link in added_urls[feed_tag["tags"]["name"]]:
+                            continue
+                        feeds_to_post[tag_info["tags"]["name"]].append(
+                            {
+                                "article": article,
+                                "image": (
+                                    parsed_feed.image.href  # type: ignore
+                                    if hasattr(parsed_feed, "image")
+                                    else None
+                                ),
+                                "feed_name": feed_name,
+                            }
                         )
-
-                # Update last_posted_guid
-                new_last_posted_guid = new_articles[0].guid
-                update_response = (
-                    supabase.table("feeds")
-                    .update({"last_posted_guid": new_last_posted_guid})
-                    .eq("id", feed_id)
-                    .execute()
-                )
-                if update_response.data:
-                    print(
-                        f"Updated last_posted_guid for {feed_name} to {new_last_posted_guid}"
-                    )
-                else:
-                    print(f"Failed to update last_posted_guid for {feed_name}")
-
+                        added_urls[feed_tag["tags"]["name"]].add(article.link)
             else:
                 print(f"No new articles for {feed_name}.")
+
+        # === 記事をdiscordに投稿 ===
+        print("======\n======\nStart Posting...")
+        # タグごとに投稿
+        for tag in feeds_to_post.keys():
+            # 記事の投稿日時でソート
+            articles = sorted(
+                feeds_to_post[tag],
+                key=lambda x: x["article"].published_parsed,
+            )
+            for article in articles:
+                # 記事投稿
+                post_to_discord(
+                    tag_url[tag],
+                    article["image"],
+                    article["article"],
+                    article["feed_name"],
+                )
+                print(f"Posted article '{article["article"].guid}' to {tag}.")
+
+        # === サマリー投稿 ===
+        post_summary(feeds_to_post)
+
+        # === 最終投稿記事の更新
+        for feed_id in last_posted_guids.keys():
+
+            new_last_posted_guid = last_posted_guids[feed_id]
+
+            # 最終投稿IDを更新
+            update_response = (
+                supabase.table("feeds")
+                .update(
+                    {
+                        "last_posted_guid": new_last_posted_guid,
+                        "updated_at": datetime.now(tz=timezone.utc).isoformat(),
+                    }
+                )
+                .eq("id", feed_id)
+                .execute()
+            )
+
+            if update_response.data:
+                print(
+                    f"Updated last_posted_guid for {article["feed_name"]} to {new_last_posted_guid}"
+                )
+            else:
+                print(f"Failed to update last_posted_guid for {article["feed_name"]}")
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
