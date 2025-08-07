@@ -184,7 +184,7 @@ def main():
                 # === 投稿 ===
                 for article in new_articles:
                     for tag_info in feed_tags:
-                        if article.link in added_urls[feed_tag["tags"]["name"]]:
+                        if article.link in added_urls[tag_info["tags"]["name"]]:
                             continue
                         feeds_to_post[tag_info["tags"]["name"]].append(
                             {
@@ -197,7 +197,7 @@ def main():
                                 "feed_name": feed_name,
                             }
                         )
-                        added_urls[feed_tag["tags"]["name"]].add(article.link)
+                        added_urls[tag_info["tags"]["name"]].add(article.link)
             else:
                 print(f"No new articles for {feed_name}.")
 
@@ -223,6 +223,7 @@ def main():
                     article["feed_name"],
                 )
                 print(f"Posted article '{article['article'].guid}' to {tag}.")
+        print("======\n")
 
         # === 最終投稿記事の更新
         for feed_id in last_posted_guids.keys():
