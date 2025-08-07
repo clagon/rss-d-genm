@@ -6,6 +6,7 @@ from supabase import create_client, Client
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from functools import reduce
+from email.utils import parsedate_to_datetime
 
 import time
 
@@ -47,8 +48,8 @@ def post_to_discord(webhook_url, image, article, feed_name):
         data["embeds"][0]["image"] = {"url": article.links[1].href}
     try:
         response = requests.post(webhook_url, json=data)
-        response.raise_for_status()  # Raise an exception for HTTP errors
         time.sleep(int(response.headers.get("x-ratelimit-reset-after", 1)))
+        response.raise_for_status()  # Raise an exception for HTTP errors
     except requests.exceptions.RequestException as e:
         print(response.content)
         print(f"Error posting to Discord: {e}")
@@ -104,7 +105,9 @@ def main():
         #  === DBからフィード情報取得 ===
         response = (
             supabase.table("feeds")
-            .select("id, name, url, last_posted_guid, feed_tags(tags(name))")
+            .select(
+                "id, name, url, last_posted_guid, last_post_at, feed_tags(tags(name))"
+            )
             .eq("enabled", True)
             .execute()
         )
@@ -132,6 +135,9 @@ def main():
             feed_name = feed_entry["name"]
             feed_url = feed_entry["url"]
             last_posted_guid = feed_entry["last_posted_guid"]
+            last_post_at = feed_entry["last_post_at"] and datetime.fromisoformat(
+                feed_entry["last_post_at"]
+            ).replace(microsecond=0)
             feed_tags = feed_entry["feed_tags"]
 
             # 配列初期化
@@ -151,17 +157,29 @@ def main():
 
             # === 新着記事取得 ===
             new_articles: list[feedparser.FeedParserDict] = []
-            entries = sorted(parsed_feed.entries, key=lambda x: x.published_parsed)
+            entries = sorted(
+                parsed_feed.entries, key=lambda x: x.published_parsed, reverse=True
+            )
 
             for entry in entries:
-                if entry.guid == last_posted_guid:
+                # if entry.guid == last_posted_guid:
+                #     break
+                try:
+                    published_at = parsedate_to_datetime(entry.published)  # type: ignore
+                except:
+                    published_at = datetime(*entry.published_parsed[:7], tzinfo=timezone.utc)  # type: ignore
+
+                if last_post_at and published_at.replace(microsecond=0) <= last_post_at:
                     break
                 new_articles.append(entry)
 
             if new_articles:
                 print(f"Found {len(new_articles)} new articles for {feed_name}.")
 
-                last_posted_guids[feed_id] = new_articles[0].guid
+                last_posted_guids[feed_id] = {
+                    "guid": new_articles[0].guid,
+                    "time": new_articles[0].published_parsed[:7],
+                }
 
                 # === 投稿 ===
                 for article in new_articles:
@@ -183,8 +201,12 @@ def main():
             else:
                 print(f"No new articles for {feed_name}.")
 
-        # === 記事をdiscordに投稿 ===
-        print("======\n======\nStart Posting...")
+        # === 記事をdiscordに投稿 ===s
+        print(
+            "======\n======\nStart Posting..."
+            if sum(len(feeds_to_post[key]) for key in feeds_to_post.keys()) > 0
+            else "======\n======\nNo New Post Found"
+        )
         # タグごとに投稿
         for tag in feeds_to_post.keys():
             # 記事の投稿日時でソート
@@ -202,9 +224,6 @@ def main():
                 )
                 print(f"Posted article '{article['article'].guid}' to {tag}.")
 
-        # === サマリー投稿 ===
-        post_summary(feeds_to_post)
-
         # === 最終投稿記事の更新
         for feed_id in last_posted_guids.keys():
 
@@ -215,8 +234,11 @@ def main():
                 supabase.table("feeds")
                 .update(
                     {
-                        "last_posted_guid": new_last_posted_guid,
+                        "last_posted_guid": new_last_posted_guid["guid"],
                         "updated_at": datetime.now(tz=timezone.utc).isoformat(),
+                        "last_post_at": datetime(
+                            *new_last_posted_guid["time"]
+                        ).isoformat(),
                     }
                 )
                 .eq("id", feed_id)
@@ -225,10 +247,13 @@ def main():
 
             if update_response.data:
                 print(
-                    f"Updated last_posted_guid for {article["feed_name"]} to {new_last_posted_guid}"
+                    f"Updated last_posted_guid for {article["feed_name"]} to {new_last_posted_guid["guid"]}"
                 )
             else:
                 print(f"Failed to update last_posted_guid for {article["feed_name"]}")
+
+        # === サマリー投稿 ===
+        post_summary(feeds_to_post)
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
