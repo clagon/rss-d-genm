@@ -73,7 +73,7 @@ export const actions = {
         const id = data.get('id');
         const name = data.get('name');
         const url = data.get('url');
-        const enabled = data.get('enabled') === 'on';
+        const enabled = data.get('enabled') === 'true';
         const tagArr = data.getAll('tags') as string[];
 
         console.log('Registering feed:', { name, url, enabled, tagArr });

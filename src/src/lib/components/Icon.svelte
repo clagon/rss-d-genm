@@ -1,11 +1,17 @@
 <script lang="ts">
 	import '@fontsource-variable/material-symbols-rounded';
 
-	const { name, size = '1.5em', color = 'currentColor', fill = false } = $props();
+	const {
+		name,
+		size = '1.5em',
+		color = 'currentColor',
+		fill = false,
+		class: className = ''
+	} = $props();
 </script>
 
 <span
-	class="material-symbols-rounded"
+	class="material-symbols-rounded {className}"
 	style="font-size: {size}; color: {color};font-variation-settings: 'FILL' {fill ? 1 : 0};"
 	>{name}</span>
 

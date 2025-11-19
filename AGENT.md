@@ -1,0 +1,1 @@
+Think in English, respond in Japanese.
