@@ -2,8 +2,12 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import IconButton from './IconButton.svelte';
 
-	let { action, values, icon }: { action: string; values: Record<string, string>; icon: string } =
-		$props();
+	let {
+		action,
+		values,
+		icon,
+		class: className = ''
+	}: { action: string; values: Record<string, string>; icon: string; class?: string } = $props();
 </script>
 
 <form
@@ -16,5 +20,7 @@
 			name={key}
 			{value} />
 	{/each}
-	<IconButton {icon} />
+	<IconButton
+		{icon}
+		class={className} />
 </form>

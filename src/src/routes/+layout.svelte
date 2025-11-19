@@ -24,19 +24,36 @@
 <svelte:head>
 	<title>{page.data.title || 'RSS'} | RSS Feeds</title>
 </svelte:head>
+
 {#if !page?.error}
 	<div
 		id="app"
-		class="bg-linear-to-b flex min-h-screen w-full flex-col from-gray-200 from-10% to-gray-100 p-10">
-		<Header
-			{links}
-			{user} />
-		<main class="rounded-4xl mt-3 flex-1 bg-slate-50 p-8">
-			{@render children()}
-		</main>
+		class="selection:bg-primary-500/30 selection:text-primary-200 relative min-h-screen w-full overflow-x-hidden bg-slate-950">
+		<!-- Abstract Background Shapes -->
+		<div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+			<div
+				class="bg-primary-900/20 absolute -left-[10%] -top-[20%] h-[50%] w-[50%] rounded-full blur-[120px]">
+			</div>
+			<div
+				class="bg-secondary-900/20 absolute -right-[10%] top-[40%] h-[40%] w-[40%] rounded-full blur-[100px]">
+			</div>
+			<div
+				class="bg-primary-800/20 absolute -bottom-[10%] left-[20%] h-[30%] w-[30%] rounded-full blur-[80px]">
+			</div>
+		</div>
+
+		<div class="relative z-10 flex min-h-screen flex-col">
+			<Header
+				{links}
+				{user} />
+
+			<main class="container mx-auto flex-1 px-4 py-8 md:px-8">
+				{@render children()}
+			</main>
+		</div>
 	</div>
 {:else}
-	<div class="flex h-screen items-center justify-center">
+	<div class="flex h-screen items-center justify-center bg-slate-950 text-white">
 		{@render children()}
 	</div>
 {/if}

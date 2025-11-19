@@ -25,11 +25,11 @@
 	} = $props();
 </script>
 
-<div class="feed-item w-full rounded-2xl bg-white p-4 shadow">
-	<div class="flex w-full items-center justify-between gap-4">
+<div class="feed-item glass-card w-full rounded-2xl p-6 transition-all hover:bg-slate-800/60">
+	<div class="mb-4 flex w-full items-center justify-between gap-4">
 		<div>
-			<h2 class="shrink text-lg font-semibold">{feed.name}</h2>
-			<span class="text-sm text-gray-500"
+			<h2 class="shrink text-lg font-bold text-white">{feed.name}</h2>
+			<span class="text-sm text-slate-400"
 				>last updated：{feed.updated_at &&
 					new Date(feed.updated_at).toLocaleDateString('ja-JP', {
 						// weekday: 'short',
@@ -46,6 +46,10 @@
 				text={feed.enabled ? 'Enabled' : 'Disabled'} />
 		</div>
 	</div>
-	<p class="mb-2">{feed.url}</p>
+	<a
+		href={feed.url}
+		target="_blank"
+		class="text-primary-400 hover:text-primary-300 mb-4 block truncate hover:underline"
+		>{feed.url}</a>
 	<Tags tags={feed.tags.filter((tag) => !!tag).map((tag) => tag.name)} />
 </div>

@@ -53,20 +53,22 @@
 	});
 </script>
 
-<div class="rounded-2xl border border-gray-300">
-	<div class="grid grid-cols-2 rounded-t-2xl border-b border-gray-300 p-4">
+<div class="glass-card rounded-2xl border-0">
+	<div class="grid grid-cols-2 rounded-t-2xl border-b border-slate-700/50 bg-slate-900/50 p-4">
 		<div class="flex items-center gap-2">
-			<p class="text-lg font-bold">Tags</p>
-			<span class="inline-block rounded-full bg-teal-300 px-3 py-1 text-sm font-bold text-white">
+			<p class="text-lg font-bold text-white">Tags</p>
+			<span
+				class="bg-primary-500/20 text-primary-300 border-primary-500/30 inline-block rounded-full border px-3 py-1 text-sm font-bold">
 				<span class="me-1">{tags.length}</span> tags
 			</span>
 		</div>
 		<div class="flex items-center gap-4 justify-self-end">
 			<Search
+				class="focus:border-primary-500 focus:ring-primary-500 border-slate-700 bg-slate-900/50 text-white placeholder-slate-400"
 				clearable
 				bind:value={searchText} />
 			<button
-				class="flex h-full items-center whitespace-nowrap rounded-lg bg-teal-300 font-bold text-white hover:bg-teal-400"
+				class="bg-primary-600 hover:bg-primary-500 flex h-full items-center whitespace-nowrap rounded-lg font-bold text-white transition-colors"
 				onclick={() => {
 					target = null;
 					name = '';
@@ -85,11 +87,12 @@
 		</div>
 	</div>
 	<div class="grid grid-cols-[repeat(1,minmax(0,1fr))_100px]">
-		<div class="col-span-full grid grid-cols-subgrid gap-2 p-4">
+		<div
+			class="col-span-full grid grid-cols-subgrid gap-2 border-b border-slate-700/50 p-4 text-sm font-medium uppercase tracking-wider text-slate-400">
 			<button
 				class={[
-					'flex cursor-pointer items-center',
-					orderby === 'name' ? 'font-bold text-teal-500' : ''
+					'flex cursor-pointer items-center transition-colors hover:text-white',
+					orderby === 'name' ? 'text-primary-400 font-bold' : ''
 				].join(' ')}
 				onclick={() => changeOrder('name')}>
 				<span>name</span>
@@ -106,14 +109,20 @@
 		</div>
 		{#each tags as tag}
 			<div
-				class="col-span-full grid grid-cols-subgrid gap-2 p-4 last:rounded-b-2xl even:bg-slate-100">
-				<p class="flex items-center overflow-hidden text-ellipsis whitespace-nowrap">{tag.name}</p>
+				class="col-span-full grid grid-cols-subgrid gap-2 border-b border-slate-700/30 p-4 text-slate-300 transition-colors last:rounded-b-2xl last:border-0 hover:bg-white/5">
+				<p
+					class="flex items-center overflow-hidden text-ellipsis whitespace-nowrap font-medium text-white">
+					{tag.name}
+				</p>
 				<div class="flex items-center gap-2">
-					<IconButton icon="delete" />
+					<IconButton
+						icon="delete"
+						class="text-slate-400 hover:text-red-400" />
 					<ActionIconButton
 						icon="edit"
 						action="?/get"
-						values={{ id: tag.id }} />
+						values={{ id: tag.id }}
+						class="hover:text-primary-400 text-slate-400" />
 				</div>
 			</div>
 		{/each}
