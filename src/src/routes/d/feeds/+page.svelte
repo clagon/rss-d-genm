@@ -68,7 +68,8 @@
 </script>
 
 <div class="glass-card rounded-2xl border-0">
-	<div class="grid grid-cols-2 rounded-t-2xl border-b border-slate-700/50 bg-slate-900/50 p-4">
+	<div
+		class="flex flex-col gap-4 rounded-t-2xl border-b border-slate-700/50 bg-slate-900/50 p-4 md:grid md:grid-cols-2">
 		<div class="flex items-center gap-2">
 			<p class="text-lg font-bold text-white">Feeds</p>
 			<span
@@ -76,14 +77,14 @@
 				<span class="me-1">{feeds.length}</span> feeds
 			</span>
 		</div>
-		<div class="flex items-center gap-4 justify-self-end">
-			<div class="w-64">
+		<div class="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 md:justify-self-end">
+			<div class="w-full md:w-64">
 				<SearchInput
 					bind:value={searchText}
 					placeholder="Search feeds..." />
 			</div>
 			<button
-				class="bg-primary-600 hover:bg-primary-500 focus:ring-primary-500 group relative inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900"
+				class="bg-primary-600 hover:bg-primary-500 focus:ring-primary-500 group relative inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900"
 				onclick={() => {
 					target = null;
 					name = '';
@@ -100,7 +101,34 @@
 			</button>
 		</div>
 	</div>
-	<div class="grid grid-cols-[repeat(3,minmax(0,1fr))_150px_100px]">
+
+	<!-- Mobile sort controls -->
+	<div class="border-b border-slate-700/30 bg-slate-900/30 p-4 md:hidden">
+		<div class="flex items-center gap-2">
+			<label
+				for="sort-select-feeds"
+				class="text-sm text-slate-400">Sort:</label>
+			<select
+				id="sort-select-feeds"
+				bind:value={orderby}
+				class="focus:border-primary-500 focus:ring-primary-500 flex-1 rounded-lg border border-slate-700 bg-slate-900/50 px-3 py-2 text-sm text-white">
+				<option value="name">Name</option>
+				<option value="url">URL</option>
+				<option value="tags">Tags</option>
+				<option value="enabled">Status</option>
+			</select>
+			<button
+				onclick={() => (order = order === 'asc' ? 'desc' : 'asc')}
+				class="flex items-center justify-center rounded-lg bg-slate-800/50 p-2 text-slate-300 hover:bg-slate-800 hover:text-white">
+				<Icon
+					name={order === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+					size="1.25em" />
+			</button>
+		</div>
+	</div>
+
+	<!-- Desktop table view -->
+	<div class="hidden md:grid md:grid-cols-[repeat(3,minmax(0,1fr))_150px_100px]">
 		<div
 			class="col-span-full grid grid-cols-subgrid gap-2 border-b border-slate-700/50 p-4 text-sm font-medium uppercase tracking-wider text-slate-400">
 			<button
@@ -198,10 +226,39 @@
 			</div>
 		{/each}
 	</div>
+
+	<!-- Mobile card view -->
+	<div class="p-4 md:hidden">
+		{#each feeds as feed}
+			<div class="glass-card mb-3 rounded-xl p-4">
+				<div class="mb-3 flex items-start justify-between">
+					<div class="flex-1">
+						<h3 class="mb-1 font-medium text-white">{feed.name}</h3>
+						<p class="break-all text-sm text-slate-400">{feed.url}</p>
+					</div>
+					<div class="ml-2 flex items-center gap-2">
+						<IconButton
+							icon="edit"
+							onclick={() => editFeed(feed)}
+							class="hover:text-primary-400 text-slate-400" />
+						<IconButton
+							icon="delete"
+							class="text-slate-400 hover:text-red-400" />
+					</div>
+				</div>
+				<div class="flex items-center justify-between">
+					<Tags tags={feed.tags.map((tag) => tag.name)} />
+					<Status
+						color={feed.enabled ? 'bg-teal-500' : 'bg-rose-500'}
+						text={feed.enabled ? 'Enabled' : 'Disabled'} />
+				</div>
+			</div>
+		{/each}
+	</div>
 </div>
 <dialog
 	bind:this={dialog}
-	class="m-auto min-w-[400px] max-w-[90%] overflow-visible bg-transparent">
+	class="m-auto min-w-[90%] max-w-[90%] overflow-visible bg-transparent md:min-w-[400px]">
 	<div class="[block-size: 100%] rounded-2xl bg-white shadow-lg">
 		<div class="grid grid-cols-2 items-center border-b border-gray-300 p-4">
 			<p class="text-xl font-bold">{target ? 'Edit' : 'Add'} feed</p>

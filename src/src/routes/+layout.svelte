@@ -47,7 +47,7 @@
 				{links}
 				{user} />
 
-			<main class="container mx-auto flex-1 px-4 py-8 md:px-8">
+			<main class="container mx-auto flex-1 px-4 py-6 md:px-8 md:py-8">
 				{@render children()}
 			</main>
 		</div>
