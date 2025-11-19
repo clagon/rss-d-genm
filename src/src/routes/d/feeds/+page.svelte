@@ -9,6 +9,7 @@
 	import { MultiSelect, Search, Toggle } from 'flowbite-svelte';
 	import Tag from '$lib/components/Tag.svelte';
 	import Status from '$lib/components/Status.svelte';
+	import { enhance } from '$app/forms';
 
 	let { data, form }: PageProps = $props();
 	let dialog: HTMLDialogElement;
@@ -51,16 +52,17 @@
 		}
 	};
 
+	const editFeed = (feed: (typeof data.feeds)[0]) => {
+		target = feed.id;
+		name = feed.name ?? '';
+		url = feed.url ?? '';
+		enabled = feed.enabled ?? true;
+		tags = feed.tags.map((t) => t.id);
+		dialog.showModal();
+	};
+
 	onMount(() => {
-		if (form && form.feed && form.feed.id) {
-			console.log('Editing feed:', form.feed);
-			target = form.feed.id;
-			name = form.feed?.name ?? '';
-			url = form.feed?.url ?? '';
-			enabled = form.feed?.enabled ?? true;
-			tags = form.feed?.tags ?? [];
-			dialog.showModal();
-		}
+		// Client-side edit logic replaces the need for this check
 	});
 </script>
 
@@ -188,10 +190,9 @@
 					<IconButton
 						icon="delete"
 						class="text-slate-400 hover:text-red-400" />
-					<ActionIconButton
+					<IconButton
 						icon="edit"
-						action="?/get"
-						values={{ id: feed.id, name: feed.name ?? '', url: feed.url ?? '' }}
+						onclick={() => editFeed(feed)}
 						class="hover:text-primary-400 text-slate-400" />
 				</div>
 			</div>
@@ -213,6 +214,13 @@
 		<form
 			method="POST"
 			action="?/register"
+			use:enhance={() => {
+				return async ({ result }) => {
+					if (result.type === 'success') {
+						dialog.close();
+					}
+				};
+			}}
 			class="relative flex flex-col gap-4 p-4">
 			<Toggle
 				bind:checked={enabled}

@@ -9,6 +9,7 @@
 	import { MultiSelect, Search } from 'flowbite-svelte';
 	import Tag from '$lib/components/Tag.svelte';
 	import Status from '$lib/components/Status.svelte';
+	import { enhance } from '$app/forms';
 
 	let { data, form }: PageProps = $props();
 	let dialog: HTMLDialogElement;
@@ -41,15 +42,16 @@
 		}
 	};
 
+	const editTag = (tag: (typeof data.tags)[0]) => {
+		target = tag.id;
+		name = tag.name ?? '';
+		discord_webhook_url = tag.discord_webhook_url ?? '';
+		discord_channel_id = tag.discord_channel_id ?? '';
+		dialog.showModal();
+	};
+
 	onMount(() => {
-		if (form && form.tag && form.tag.id) {
-			console.log('Editing feed:', form.tag);
-			target = form.tag.id;
-			name = form.tag?.name ?? '';
-			discord_webhook_url = form.tag?.discord_webhook_url ?? '';
-			discord_channel_id = form.tag?.discord_channel_id ?? '';
-			dialog.showModal();
-		}
+		// Client-side edit logic replaces the need for this check
 	});
 </script>
 
@@ -118,10 +120,9 @@
 					<IconButton
 						icon="delete"
 						class="text-slate-400 hover:text-red-400" />
-					<ActionIconButton
+					<IconButton
 						icon="edit"
-						action="?/get"
-						values={{ id: tag.id }}
+						onclick={() => editTag(tag)}
 						class="hover:text-primary-400 text-slate-400" />
 				</div>
 			</div>
@@ -143,6 +144,13 @@
 		<form
 			method="POST"
 			action="?/register"
+			use:enhance={() => {
+				return async ({ result }) => {
+					if (result.type === 'success') {
+						dialog.close();
+					}
+				};
+			}}
 			class="relative flex flex-col gap-4 p-4">
 			<input
 				type="hidden"
