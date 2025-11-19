@@ -1,10 +1,39 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import Icon from '$lib/components/Icon.svelte';
 </script>
 
-<div class="flex flex-col items-center gap-2">
-	<h1>{page.status}{page?.error?.message}</h1>
-	<a
-		href="/"
-		class="text-blue-500 hover:underline">Go back to home</a>
+<div class="flex min-h-[60vh] flex-col items-center justify-center p-4 text-center">
+	<div
+		class="glass-card relative flex max-w-lg flex-col items-center overflow-hidden rounded-3xl p-12">
+		<div class="bg-primary-500/20 absolute -right-24 -top-24 h-48 w-48 rounded-full blur-3xl"></div>
+		<div class="bg-secondary-500/20 absolute -bottom-24 -left-24 h-48 w-48 rounded-full blur-3xl">
+		</div>
+
+		<div
+			class="text-primary-400 mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-slate-800/50 ring-1 ring-white/10">
+			<Icon
+				name="error"
+				size="4em" />
+		</div>
+
+		<h1 class="text-gradient mb-2 text-8xl font-bold tracking-tighter">{page.status}</h1>
+
+		<h2 class="mb-6 text-2xl font-bold text-white">{page?.error?.message || 'Page Not Found'}</h2>
+
+		<p class="mb-8 text-slate-400">
+			Oops! It looks like you've ventured into the unknown. The page you're looking for doesn't
+			exist or has been moved.
+		</p>
+
+		<a
+			href="/"
+			class="bg-primary-600 hover:bg-primary-500 focus:ring-primary-500 group relative inline-flex items-center justify-center rounded-full px-8 py-3 text-base font-semibold text-white transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900">
+			<Icon
+				name="home"
+				size="1.25em"
+				class="mr-2" />
+			Back to Home
+		</a>
+	</div>
 </div>
