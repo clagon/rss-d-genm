@@ -1,14 +1,8 @@
 <script lang="ts">
-	import ActionIconButton from '$lib/components/ActionIconButton.svelte';
 	import IconButton from '$lib/components/IconButton.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	import Tags from '$lib/components/Tags.svelte';
 	import type { PageProps } from './$types';
 	import { onMount } from 'svelte';
-	import TextInput from '$lib/components/TextInput.svelte';
-	import { MultiSelect } from 'flowbite-svelte';
-	import Tag from '$lib/components/Tag.svelte';
-	import Status from '$lib/components/Status.svelte';
 	import { enhance } from '$app/forms';
 	import SearchInput from '$lib/components/SearchInput.svelte';
 
@@ -176,16 +170,23 @@
 </div>
 <dialog
 	bind:this={dialog}
-	class="m-auto min-w-[90%] max-w-[90%] overflow-visible bg-transparent md:min-w-[400px]">
-	<div class="[block-size: 100%] rounded-2xl bg-white shadow-lg">
-		<div class="grid grid-cols-2 items-center border-b border-gray-300 p-4">
-			<p class="text-xl font-bold">{target ? 'Edit' : 'Add'} feed</p>
-			<div class="justify-self-end">
-				<IconButton
-					icon="close"
-					onclick={() => dialog.close()} />
-			</div>
+	class="m-auto min-w-[90%] max-w-[90%] overflow-visible bg-transparent md:min-w-[500px] md:max-w-[500px]">
+	<div class="glass-card relative overflow-hidden rounded-2xl">
+		<!-- Background blurs -->
+		<div class="bg-primary-500/20 absolute -right-24 -top-24 h-48 w-48 rounded-full blur-3xl"></div>
+		<div class="bg-secondary-500/20 absolute -bottom-24 -left-24 h-48 w-48 rounded-full blur-3xl">
 		</div>
+
+		<!-- Header -->
+		<div class="relative flex items-center justify-between border-b border-slate-700/50 p-6">
+			<h2 class="text-2xl font-bold text-white">{target ? 'Edit' : 'Add'} Tag</h2>
+			<IconButton
+				icon="close"
+				onclick={() => dialog.close()}
+				class="text-slate-400 hover:text-white" />
+		</div>
+
+		<!-- Form -->
 		<form
 			method="POST"
 			action="?/register"
@@ -196,35 +197,67 @@
 					}
 				};
 			}}
-			class="relative flex flex-col gap-4 p-4">
+			class="relative flex flex-col gap-6 p-6">
 			<input
 				type="hidden"
 				name="id"
 				value={target} />
-			<TextInput
-				label="Name"
-				name="name"
-				bind:value={name}
-				required />
-			<TextInput
-				label="Discord Webhook URL"
-				name="discord_webhook_url"
-				bind:value={discord_webhook_url}
-				required />
-			<TextInput
-				label="Discord Channel ID"
-				name="discord_channel_id"
-				bind:value={discord_channel_id}
-				required />
-			<div class="mt-3 grid grid-cols-2 items-center gap-4">
+
+			<!-- Name Input -->
+			<div class="flex flex-col gap-2">
+				<label
+					for="tag-name"
+					class="text-sm font-medium text-slate-300">Name</label>
+				<input
+					id="tag-name"
+					type="text"
+					name="name"
+					bind:value={name}
+					required
+					class="focus:border-primary-500 focus:ring-primary-500 rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-2.5 text-white placeholder-slate-500 focus:ring-2" />
+			</div>
+
+			<!-- Discord Webhook URL Input -->
+			<div class="flex flex-col gap-2">
+				<label
+					for="discord-webhook"
+					class="text-sm font-medium text-slate-300">Discord Webhook URL</label>
+				<input
+					id="discord-webhook"
+					type="url"
+					name="discord_webhook_url"
+					bind:value={discord_webhook_url}
+					required
+					class="focus:border-primary-500 focus:ring-primary-500 rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-2.5 text-white placeholder-slate-500 focus:ring-2" />
+			</div>
+
+			<!-- Discord Channel ID Input -->
+			<div class="flex flex-col gap-2">
+				<label
+					for="discord-channel"
+					class="text-sm font-medium text-slate-300">Discord Channel ID</label>
+				<input
+					id="discord-channel"
+					type="text"
+					name="discord_channel_id"
+					bind:value={discord_channel_id}
+					required
+					class="focus:border-primary-500 focus:ring-primary-500 rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-2.5 text-white placeholder-slate-500 focus:ring-2" />
+			</div>
+
+			<!-- Buttons -->
+			<div class="mt-4 grid grid-cols-2 items-center gap-4">
 				<button
 					type="button"
-					class="rounded-lg border border-gray-300 px-4 py-2 font-bold hover:bg-gray-200"
-					onclick={() => dialog.close()}>cancel</button>
+					onclick={() => dialog.close()}
+					class="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2.5 font-semibold text-slate-300 transition-all hover:bg-slate-800 hover:text-white">
+					Cancel
+				</button>
 				<button
 					type="submit"
-					class="rounded-lg bg-teal-300 px-4 py-2 font-bold text-white hover:bg-teal-400"
-					>Save</button>
+					class="bg-primary-600 hover:bg-primary-500 focus:ring-primary-500 rounded-lg px-4 py-2.5 font-semibold text-white transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900">
+					Save
+				</button>
 			</div>
 		</form>
 	</div>

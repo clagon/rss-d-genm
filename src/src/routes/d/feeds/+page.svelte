@@ -1,13 +1,9 @@
 <script lang="ts">
-	import ActionIconButton from '$lib/components/ActionIconButton.svelte';
 	import IconButton from '$lib/components/IconButton.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import Tags from '$lib/components/Tags.svelte';
 	import type { PageProps } from './$types';
 	import { onMount } from 'svelte';
-	import TextInput from '$lib/components/TextInput.svelte';
-	import { MultiSelect, Toggle } from 'flowbite-svelte';
-	import Tag from '$lib/components/Tag.svelte';
 	import Status from '$lib/components/Status.svelte';
 	import { enhance } from '$app/forms';
 	import SearchInput from '$lib/components/SearchInput.svelte';
@@ -258,16 +254,23 @@
 </div>
 <dialog
 	bind:this={dialog}
-	class="m-auto min-w-[90%] max-w-[90%] overflow-visible bg-transparent md:min-w-[400px]">
-	<div class="[block-size: 100%] rounded-2xl bg-white shadow-lg">
-		<div class="grid grid-cols-2 items-center border-b border-gray-300 p-4">
-			<p class="text-xl font-bold">{target ? 'Edit' : 'Add'} feed</p>
-			<div class="justify-self-end">
-				<IconButton
-					icon="close"
-					onclick={() => dialog.close()} />
-			</div>
+	class="m-auto min-w-[90%] max-w-[90%] overflow-visible bg-transparent md:min-w-[500px] md:max-w-[500px]">
+	<div class="glass-card relative overflow-hidden rounded-2xl">
+		<!-- Background blurs -->
+		<div class="bg-primary-500/20 absolute -right-24 -top-24 h-48 w-48 rounded-full blur-3xl"></div>
+		<div class="bg-secondary-500/20 absolute -bottom-24 -left-24 h-48 w-48 rounded-full blur-3xl">
 		</div>
+
+		<!-- Header -->
+		<div class="relative flex items-center justify-between border-b border-slate-700/50 p-6">
+			<h2 class="text-2xl font-bold text-white">{target ? 'Edit' : 'Add'} Feed</h2>
+			<IconButton
+				icon="close"
+				onclick={() => dialog.close()}
+				class="text-slate-400 hover:text-white" />
+		</div>
+
+		<!-- Form -->
 		<form
 			method="POST"
 			action="?/register"
@@ -278,53 +281,114 @@
 					}
 				};
 			}}
-			class="relative flex flex-col gap-4 p-4">
-			<Toggle
-				bind:checked={enabled}
-				name="enabled">{enabled ? 'Enabled' : 'Disabled'}</Toggle>
+			class="relative flex flex-col gap-6 p-6">
+			<!-- Enable/Disable Toggle -->
+			<div class="flex items-center justify-between">
+				<label
+					for="enabled-toggle"
+					class="text-sm font-medium text-slate-300">Status</label>
+				<button
+					type="button"
+					id="enabled-toggle"
+					onclick={() => (enabled = !enabled)}
+					class="{enabled
+						? 'bg-primary-600'
+						: 'bg-slate-700'} focus:ring-primary-500 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900">
+					<span class="sr-only">Enable feed</span>
+					<span
+						class="{enabled
+							? 'translate-x-6'
+							: 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+					></span>
+				</button>
+			</div>
+			<div class="text-sm text-slate-400">
+				{enabled ? 'Feed is enabled' : 'Feed is disabled'}
+			</div>
+			<input
+				type="hidden"
+				name="enabled"
+				value={enabled} />
 
 			<input
 				type="hidden"
 				name="id"
 				value={target} />
-			<TextInput
-				label="Name"
-				name="name"
-				bind:value={name}
-				required />
-			<TextInput
-				label="URL"
-				name="url"
-				bind:value={url}
-				required />
-			<label
-				for="tags"
-				class="flex flex-col gap-2">
-				<span> Tags </span>
-			</label>
-			<MultiSelect
-				name="tags"
-				id="tags"
-				items={data.tags.map((tag) => ({ value: tag.id, name: tag.name }))}
-				bind:value={tags}
-				size="lg">
-				{#snippet children({ item, clear })}
-					<Tag tag={`${item.name}`} />
-				{/snippet}
-			</MultiSelect>
-			<!-- <input
-				type="hidden"
-				name="tags"
-				value={tags} /> -->
-			<div class="mt-3 grid grid-cols-2 items-center gap-4">
+
+			<!-- Name Input -->
+			<div class="flex flex-col gap-2">
+				<label
+					for="feed-name"
+					class="text-sm font-medium text-slate-300">Name</label>
+				<input
+					id="feed-name"
+					type="text"
+					name="name"
+					bind:value={name}
+					required
+					class="focus:border-primary-500 focus:ring-primary-500 rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-2.5 text-white placeholder-slate-500 focus:ring-2" />
+			</div>
+
+			<!-- URL Input -->
+			<div class="flex flex-col gap-2">
+				<label
+					for="feed-url"
+					class="text-sm font-medium text-slate-300">URL</label>
+				<input
+					id="feed-url"
+					type="url"
+					name="url"
+					bind:value={url}
+					required
+					class="focus:border-primary-500 focus:ring-primary-500 rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-2.5 text-white placeholder-slate-500 focus:ring-2" />
+			</div>
+
+			<!-- Tags Multi-select -->
+			<div class="flex flex-col gap-2">
+				<label
+					for="feed-tags"
+					class="text-sm font-medium text-slate-300">Tags</label>
+				<div
+					class="flex min-h-[44px] flex-wrap gap-2 rounded-lg border border-slate-700 bg-slate-900/50 p-3">
+					{#each data.tags as tag}
+						<label class="inline-flex items-center">
+							<input
+								type="checkbox"
+								name="tags"
+								value={tag.id}
+								checked={tags.includes(tag.id)}
+								onchange={(e) => {
+									if (e.currentTarget.checked) {
+										tags = [...tags, tag.id];
+									} else {
+										tags = tags.filter((t) => t !== tag.id);
+									}
+								}}
+								class="sr-only" />
+							<span
+								class="{tags.includes(tag.id)
+									? 'bg-primary-600 text-white'
+									: 'bg-slate-800/50 text-slate-400'} hover:bg-primary-500 cursor-pointer rounded-full px-3 py-1 text-sm font-medium transition-colors hover:text-white">
+								{tag.name}
+							</span>
+						</label>
+					{/each}
+				</div>
+			</div>
+
+			<!-- Buttons -->
+			<div class="mt-4 grid grid-cols-2 items-center gap-4">
 				<button
 					type="button"
-					class="rounded-lg border border-gray-300 px-4 py-2 font-bold hover:bg-gray-200"
-					onclick={() => dialog.close()}>cancel</button>
+					onclick={() => dialog.close()}
+					class="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2.5 font-semibold text-slate-300 transition-all hover:bg-slate-800 hover:text-white">
+					Cancel
+				</button>
 				<button
 					type="submit"
-					class="rounded-lg bg-teal-300 px-4 py-2 font-bold text-white hover:bg-teal-400"
-					>Save</button>
+					class="bg-primary-600 hover:bg-primary-500 focus:ring-primary-500 rounded-lg px-4 py-2.5 font-semibold text-white transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900">
+					Save
+				</button>
 			</div>
 		</form>
 	</div>
