@@ -6,10 +6,11 @@
 	import type { PageProps } from './$types';
 	import { onMount } from 'svelte';
 	import TextInput from '$lib/components/TextInput.svelte';
-	import { MultiSelect, Search, Toggle } from 'flowbite-svelte';
+	import { MultiSelect, Toggle } from 'flowbite-svelte';
 	import Tag from '$lib/components/Tag.svelte';
 	import Status from '$lib/components/Status.svelte';
 	import { enhance } from '$app/forms';
+	import SearchInput from '$lib/components/SearchInput.svelte';
 
 	let { data, form }: PageProps = $props();
 	let dialog: HTMLDialogElement;
@@ -76,12 +77,13 @@
 			</span>
 		</div>
 		<div class="flex items-center gap-4 justify-self-end">
-			<Search
-				class="focus:border-primary-500 focus:ring-primary-500 border-slate-700 bg-slate-900/50 text-white placeholder-slate-400"
-				clearable
-				bind:value={searchText} />
+			<div class="w-64">
+				<SearchInput
+					bind:value={searchText}
+					placeholder="Search feeds..." />
+			</div>
 			<button
-				class="bg-primary-600 hover:bg-primary-500 flex h-full items-center whitespace-nowrap rounded-lg font-bold text-white transition-colors"
+				class="bg-primary-600 hover:bg-primary-500 focus:ring-primary-500 group relative inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900"
 				onclick={() => {
 					target = null;
 					name = '';
@@ -90,13 +92,11 @@
 					enabled = true;
 					dialog.showModal();
 				}}>
-				<div class="flex aspect-square h-full items-center justify-center p-2">
-					<Icon
-						name="add"
-						size="1.3em"
-						fill={true} />
-				</div>
-				<span class="-translate-y-0.5 pe-3 ps-0">Add Feed</span>
+				<Icon
+					name="add"
+					size="1.25em"
+					class="mr-2" />
+				Add Feed
 			</button>
 		</div>
 	</div>
