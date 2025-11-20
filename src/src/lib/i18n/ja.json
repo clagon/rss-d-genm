@@ -1,0 +1,84 @@
+{
+  "common": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "edit": "編集",
+    "delete": "削除",
+    "add": "追加",
+    "search": "検索...",
+    "status": "ステータス",
+    "enabled": "有効",
+    "disabled": "無効",
+    "name": "名前",
+    "url": "URL",
+    "tags": "タグ",
+    "last_updated": "最終更新:",
+    "delete_confirm": "本当に削除しますか?",
+    "delete_confirm_desc": "この操作は取り消せません。"
+  },
+  "header": {
+    "list": "リスト",
+    "feeds": "フィード",
+    "tags": "タグ",
+    "signin": "サインイン",
+    "signout": "サインアウト"
+  },
+  "landing": {
+    "title": "RSS Feeds",
+    "hero": {
+      "badge": "新機能: AI搭載フィード発見",
+      "title_prefix": "あなただけの",
+      "title_suffix": "ナレッジストリーム",
+      "description": "21世紀のために設計されたモダンなRSSリーダーで、情報の収集・消費・活用を思いのままに。"
+    },
+    "get_started": "始める",
+    "explore_feeds": "フィードを探す",
+    "features": {
+      "smart_aggregation": {
+        "title": "スマート集約",
+        "description": "高度なアルゴリズムを使用して、フィードを自動的に分類・優先順位付けします。"
+      },
+      "clean_reading": {
+        "title": "クリーンリーディング",
+        "description": "コンテンツを最優先にした、集中できる閲覧モードです。"
+      },
+      "cross_platform": {
+        "title": "クロスプラットフォーム",
+        "description": "すべてのデバイス間で読書の進捗状況を瞬時に同期します。"
+      }
+    }
+  },
+  "feeds": {
+    "title": "フィード",
+    "add_feed": "フィードを追加",
+    "edit_feed": "フィードを編集",
+    "search_placeholder": "フィードを検索...",
+    "sort": "並び替え:",
+    "feed_enabled": "フィードは有効です",
+    "feed_disabled": "フィードは無効です"
+  },
+  "tags": {
+    "title": "タグ",
+    "add_tag": "タグを追加",
+    "edit_tag": "タグを編集",
+    "search_placeholder": "タグを検索...",
+    "discord_webhook_url": "Discord Webhook URL",
+    "discord_channel_id": "Discord Channel ID"
+  },
+  "signin": {
+    "title": "アカウントにサインイン",
+    "welcome": "おかえりなさい",
+    "description": "サインインして、パーソナライズされたフィードにアクセスしましょう",
+    "button": "Discordでサインイン",
+    "agreement_prefix": "サインインすることで、",
+    "terms": "利用規約",
+    "and": "および",
+    "privacy": "プライバシーポリシー",
+    "agreement_suffix": "に同意したことになります。"
+  },
+  "error": {
+    "not_found": "ページが見つかりません",
+    "not_found_desc": "お探しのページは存在しないか、移動した可能性があります。",
+    "go_home": "ホームへ戻る"
+  }
+}

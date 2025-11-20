@@ -3,6 +3,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { authClient } from '$lib/auth-client';
 	import { goto } from '$app/navigation';
+	import { t } from 'svelte-i18n';
 
 	let {
 		links,
@@ -21,12 +22,14 @@
 		<div class="flex items-center gap-4 md:gap-8">
 			<h1
 				class="from-primary-400 to-secondary-400 bg-gradient-to-r bg-clip-text text-xl font-bold text-transparent md:text-2xl">
-				RSS Feeds
+				{$t('landing.title')}
 			</h1>
 
 			<nav class="hidden items-center gap-2 md:flex">
 				{#each links.filter((link) => !link.needsAuth || !!user) as link}
-					<HeaderLink {...link} />
+					<HeaderLink
+						{...link}
+						text={$t(link.text)} />
 				{/each}
 			</nav>
 		</div>
@@ -45,12 +48,12 @@
 				<a
 					href="/logout"
 					class="hidden h-9 items-center rounded-full bg-red-500/20 px-5 text-sm font-bold text-red-200 transition-all hover:bg-red-500 hover:text-white sm:flex"
-					>Logout</a>
+					>{$t('header.signout')}</a>
 			{:else}
 				<a
 					href="/signin"
 					class="from-primary-600 to-secondary-600 shadow-primary-500/20 hover:shadow-primary-500/40 flex h-9 items-center rounded-full bg-gradient-to-r px-4 text-xs font-bold text-white shadow-lg transition-all hover:scale-105 md:h-10 md:px-6 md:text-sm"
-					>Sign In</a>
+					>{$t('header.signin')}</a>
 			{/if}
 
 			<!-- Mobile menu button -->
@@ -75,7 +78,7 @@
 					<Icon
 						name={link.icon}
 						size="1.25em" />
-					<span class="font-medium">{link.text}</span>
+					<span class="font-medium">{$t(link.text)}</span>
 				</a>
 			{/each}
 			{#if user}
@@ -86,7 +89,7 @@
 					<Icon
 						name="logout"
 						size="1.25em" />
-					<span class="font-medium">Logout</span>
+					<span class="font-medium">{$t('header.signout')}</span>
 				</a>
 			{/if}
 		</nav>

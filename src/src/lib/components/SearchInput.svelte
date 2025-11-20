@@ -1,9 +1,11 @@
 <script lang="ts">
 	import Icon from './Icon.svelte';
 
+	import { t } from 'svelte-i18n';
+
 	let {
 		value = $bindable(''),
-		placeholder = 'Search...'
+		placeholder = $t('common.search')
 	}: {
 		value?: string;
 		placeholder?: string;

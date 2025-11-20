@@ -91,3 +91,48 @@
 .animate-fade-in-up {
 	animation: fade-in-up 0.6s ease-out forwards;
 }
+
+/* Dialog Animations */
+dialog {
+	opacity: 0;
+	transform: scale(0.95);
+	transition:
+		opacity 0.3s ease-out,
+		transform 0.3s ease-out,
+		display 0.3s ease-out allow-discrete,
+		overlay 0.3s ease-out allow-discrete;
+}
+
+dialog[open] {
+	opacity: 1;
+	transform: scale(1);
+}
+
+@starting-style {
+	dialog[open] {
+		opacity: 0;
+		transform: scale(0.95);
+	}
+}
+
+dialog::backdrop {
+	background-color: rgb(0 0 0 / 0);
+	backdrop-filter: blur(0);
+	transition:
+		display 0.3s allow-discrete,
+		overlay 0.3s allow-discrete,
+		background-color 0.3s,
+		backdrop-filter 0.3s;
+}
+
+dialog[open]::backdrop {
+	background-color: rgb(0 0 0 / 0.5);
+	backdrop-filter: blur(4px);
+}
+
+@starting-style {
+	dialog[open]::backdrop {
+		background-color: rgb(0 0 0 / 0);
+		backdrop-filter: blur(0);
+	}
+}

@@ -1,0 +1,84 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "search": "Search...",
+    "status": "Status",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "name": "Name",
+    "url": "URL",
+    "tags": "Tags",
+    "last_updated": "Last updated:",
+    "delete_confirm": "Are you sure?",
+    "delete_confirm_desc": "This action cannot be undone."
+  },
+  "header": {
+    "list": "List",
+    "feeds": "Feeds",
+    "tags": "Tags",
+    "signin": "Sign In",
+    "signout": "Sign Out"
+  },
+  "landing": {
+    "title": "RSS Feeds",
+    "hero": {
+      "badge": "New: AI-Powered Feed Discovery",
+      "title_prefix": "Your Personal",
+      "title_suffix": "Knowledge Stream",
+      "description": "Curate, consume, and conquer your information diet with a modern RSS reader designed for the 21st century."
+    },
+    "get_started": "Get Started",
+    "explore_feeds": "Explore Feeds",
+    "features": {
+      "smart_aggregation": {
+        "title": "Smart Aggregation",
+        "description": "Automatically categorize and prioritize your feeds using advanced algorithms."
+      },
+      "clean_reading": {
+        "title": "Clean Reading",
+        "description": "Distraction-free reading mode that puts content first."
+      },
+      "cross_platform": {
+        "title": "Cross-Platform",
+        "description": "Sync your reading progress across all your devices instantly."
+      }
+    }
+  },
+  "feeds": {
+    "title": "Feeds",
+    "add_feed": "Add Feed",
+    "edit_feed": "Edit Feed",
+    "search_placeholder": "Search feeds...",
+    "sort": "Sort:",
+    "feed_enabled": "Feed is enabled",
+    "feed_disabled": "Feed is disabled"
+  },
+  "tags": {
+    "title": "Tags",
+    "add_tag": "Add Tag",
+    "edit_tag": "Edit Tag",
+    "search_placeholder": "Search tags...",
+    "discord_webhook_url": "Discord Webhook URL",
+    "discord_channel_id": "Discord Channel ID"
+  },
+  "signin": {
+    "title": "Sign in to your account",
+    "welcome": "Welcome Back",
+    "description": "Sign in to access your personalized feed",
+    "button": "Sign in with Discord",
+    "agreement_prefix": "By signing in, you agree to our",
+    "terms": "Terms of Service",
+    "and": "and",
+    "privacy": "Privacy Policy",
+    "agreement_suffix": "."
+  },
+  "error": {
+    "not_found": "Page Not Found",
+    "not_found_desc": "The page you are looking for doesn't exist or has been moved.",
+    "go_home": "Go Home"
+  }
+}

@@ -5,6 +5,7 @@
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
 	import SearchInput from '$lib/components/SearchInput.svelte';
+	import { t } from 'svelte-i18n';
 
 	let { data, form }: PageProps = $props();
 	let dialog: HTMLDialogElement;
@@ -45,6 +46,14 @@
 		dialog.showModal();
 	};
 
+	let deleteDialog: HTMLDialogElement;
+	let deleteTarget = $state<string | null>(null);
+
+	const confirmDelete = (id: string) => {
+		deleteTarget = id;
+		deleteDialog.showModal();
+	};
+
 	onMount(() => {
 		// Client-side edit logic replaces the need for this check
 	});
@@ -54,17 +63,18 @@
 	<div
 		class="flex flex-col gap-4 rounded-t-2xl border-b border-slate-700/50 bg-slate-900/50 p-4 md:grid md:grid-cols-2">
 		<div class="flex items-center gap-2">
-			<p class="text-lg font-bold text-white">Tags</p>
+			<p class="text-lg font-bold text-white">{$t('tags.title')}</p>
 			<span
 				class="bg-primary-500/20 text-primary-300 border-primary-500/30 inline-block rounded-full border px-3 py-1 text-sm font-bold">
-				<span class="me-1">{tags.length}</span> tags
+				<span class="me-1">{tags.length}</span>
+				{$t('header.tags').toLowerCase()}
 			</span>
 		</div>
 		<div class="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 md:justify-self-end">
 			<div class="w-full md:w-64">
 				<SearchInput
 					bind:value={searchText}
-					placeholder="Search tags..." />
+					placeholder={$t('tags.search_placeholder')} />
 			</div>
 			<button
 				class="bg-primary-600 hover:bg-primary-500 focus:ring-primary-500 group relative inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900"
@@ -79,7 +89,7 @@
 					name="add"
 					size="1.25em"
 					class="mr-2" />
-				Add Tag
+				{$t('tags.add_tag')}
 			</button>
 		</div>
 	</div>
@@ -89,12 +99,12 @@
 		<div class="flex items-center gap-2">
 			<label
 				for="sort-select-tags"
-				class="text-sm text-slate-400">Sort:</label>
+				class="text-sm text-slate-400">{$t('feeds.sort')}</label>
 			<select
 				id="sort-select-tags"
 				bind:value={orderby}
 				class="focus:border-primary-500 focus:ring-primary-500 flex-1 rounded-lg border border-slate-700 bg-slate-900/50 px-3 py-2 text-sm text-white">
-				<option value="name">Name</option>
+				<option value="name">{$t('common.name')}</option>
 			</select>
 			<button
 				onclick={() => (order = order === 'asc' ? 'desc' : 'asc')}
@@ -116,7 +126,7 @@
 					orderby === 'name' ? 'text-primary-400 font-bold' : ''
 				].join(' ')}
 				onclick={() => changeOrder('name')}>
-				<span>name</span>
+				<span>{$t('common.name')}</span>
 				{#if orderby === 'name'}
 					<div class="translate-y-1">
 						<Icon
@@ -138,6 +148,7 @@
 				<div class="flex items-center gap-2">
 					<IconButton
 						icon="delete"
+						onclick={() => confirmDelete(tag.id)}
 						class="text-slate-400 hover:text-red-400" />
 					<IconButton
 						icon="edit"
@@ -161,6 +172,7 @@
 							class="hover:text-primary-400 text-slate-400" />
 						<IconButton
 							icon="delete"
+							onclick={() => confirmDelete(tag.id)}
 							class="text-slate-400 hover:text-red-400" />
 					</div>
 				</div>
@@ -179,7 +191,9 @@
 
 		<!-- Header -->
 		<div class="relative flex items-center justify-between border-b border-slate-700/50 p-6">
-			<h2 class="text-2xl font-bold text-white">{target ? 'Edit' : 'Add'} Tag</h2>
+			<h2 class="text-2xl font-bold text-white">
+				{target ? $t('tags.edit_tag') : $t('tags.add_tag')}
+			</h2>
 			<IconButton
 				icon="close"
 				onclick={() => dialog.close()}
@@ -191,9 +205,10 @@
 			method="POST"
 			action="?/register"
 			use:enhance={() => {
-				return async ({ result }) => {
+				return async ({ result, update }) => {
 					if (result.type === 'success') {
 						dialog.close();
+						await update();
 					}
 				};
 			}}
@@ -207,7 +222,7 @@
 			<div class="flex flex-col gap-2">
 				<label
 					for="tag-name"
-					class="text-sm font-medium text-slate-300">Name</label>
+					class="text-sm font-medium text-slate-300">{$t('common.name')}</label>
 				<input
 					id="tag-name"
 					type="text"
@@ -221,7 +236,7 @@
 			<div class="flex flex-col gap-2">
 				<label
 					for="discord-webhook"
-					class="text-sm font-medium text-slate-300">Discord Webhook URL</label>
+					class="text-sm font-medium text-slate-300">{$t('tags.discord_webhook_url')}</label>
 				<input
 					id="discord-webhook"
 					type="url"
@@ -235,7 +250,7 @@
 			<div class="flex flex-col gap-2">
 				<label
 					for="discord-channel"
-					class="text-sm font-medium text-slate-300">Discord Channel ID</label>
+					class="text-sm font-medium text-slate-300">{$t('tags.discord_channel_id')}</label>
 				<input
 					id="discord-channel"
 					type="text"
@@ -251,14 +266,57 @@
 					type="button"
 					onclick={() => dialog.close()}
 					class="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2.5 font-semibold text-slate-300 transition-all hover:bg-slate-800 hover:text-white">
-					Cancel
+					{$t('common.cancel')}
 				</button>
 				<button
 					type="submit"
 					class="bg-primary-600 hover:bg-primary-500 focus:ring-primary-500 rounded-lg px-4 py-2.5 font-semibold text-white transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900">
-					Save
+					{$t('common.save')}
 				</button>
 			</div>
 		</form>
+	</div>
+</dialog>
+
+<dialog
+	bind:this={deleteDialog}
+	class="m-auto min-w-[90%] max-w-[90%] overflow-visible bg-transparent md:min-w-[400px] md:max-w-[400px]">
+	<div class="glass-card relative overflow-hidden rounded-2xl">
+		<!-- Background blurs -->
+		<div class="absolute -right-24 -top-24 h-48 w-48 rounded-full bg-red-500/20 blur-3xl"></div>
+
+		<div class="p-6">
+			<h3 class="mb-2 text-xl font-bold text-white">{$t('common.delete_confirm')}</h3>
+			<p class="mb-6 text-slate-300">{$t('common.delete_confirm_desc')}</p>
+
+			<form
+				method="POST"
+				action="?/delete"
+				use:enhance={() => {
+					return async ({ result, update }) => {
+						if (result.type === 'success') {
+							deleteDialog.close();
+							await update();
+						}
+					};
+				}}
+				class="flex justify-end gap-4">
+				<input
+					type="hidden"
+					name="id"
+					value={deleteTarget} />
+				<button
+					type="button"
+					onclick={() => deleteDialog.close()}
+					class="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2.5 font-semibold text-slate-300 transition-all hover:bg-slate-800 hover:text-white">
+					{$t('common.cancel')}
+				</button>
+				<button
+					type="submit"
+					class="rounded-lg bg-red-600 px-4 py-2.5 font-semibold text-white transition-all hover:scale-105 hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-slate-900">
+					{$t('common.delete')}
+				</button>
+			</form>
+		</div>
 	</div>
 </dialog>

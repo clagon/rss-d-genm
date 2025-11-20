@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
+	import { t } from 'svelte-i18n';
 </script>
 
 <div class="flex min-h-[60vh] flex-col items-center justify-center p-4 text-center">
@@ -19,12 +20,21 @@
 
 		<h1 class="text-gradient mb-2 text-8xl font-bold tracking-tighter">{page.status}</h1>
 
-		<h2 class="mb-6 text-2xl font-bold text-white">{page?.error?.message || 'Page Not Found'}</h2>
+		<h2 class="mb-6 text-2xl font-bold text-white">
+			{page?.error?.message || $t('error.not_found')}
+		</h2>
 
 		<p class="mb-8 text-slate-400">
-			Oops! It looks like you've ventured into the unknown. The page you're looking for doesn't
-			exist or has been moved.
+			{$t('error.not_found_desc')}
 		</p>
+
+		{#if page.error}
+			<pre
+				class="mb-8 max-w-full overflow-auto rounded bg-slate-800 p-4 text-left text-xs text-red-400">
+				{JSON.stringify(page.error, null, 2)}
+				{page.error.stack}
+			</pre>
+		{/if}
 
 		<a
 			href="/"
@@ -33,7 +43,7 @@
 				name="home"
 				size="1.25em"
 				class="mr-2" />
-			Back to Home
+			{$t('error.go_home')}
 		</a>
 	</div>
 </div>
