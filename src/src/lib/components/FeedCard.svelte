@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Status from './Status.svelte';
 	import Tags from './Tags.svelte';
+	import { t, locale } from 'svelte-i18n';
 
 	let {
 		feed
@@ -30,8 +31,9 @@
 		<div>
 			<h2 class="shrink text-lg font-bold text-white">{feed.name}</h2>
 			<span class="text-sm text-slate-400"
-				>last updated：{feed.updated_at &&
-					new Date(feed.updated_at).toLocaleDateString('ja-JP', {
+				>{$t('common.last_updated')}
+				{feed.updated_at &&
+					new Date(feed.updated_at).toLocaleDateString($locale ?? 'en-US', {
 						// weekday: 'short',
 						year: 'numeric',
 						month: '2-digit',
@@ -43,7 +45,7 @@
 		<div>
 			<Status
 				color={feed.enabled ? 'bg-teal-500' : 'bg-rose-500'}
-				text={feed.enabled ? 'Enabled' : 'Disabled'} />
+				text={feed.enabled ? $t('common.enabled') : $t('common.disabled')} />
 		</div>
 	</div>
 	<a

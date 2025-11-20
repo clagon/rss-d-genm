@@ -7,6 +7,7 @@
 	import Status from '$lib/components/Status.svelte';
 	import { enhance } from '$app/forms';
 	import SearchInput from '$lib/components/SearchInput.svelte';
+	import { t } from 'svelte-i18n';
 
 	let { data, form }: PageProps = $props();
 	let dialog: HTMLDialogElement;
@@ -67,17 +68,18 @@
 	<div
 		class="flex flex-col gap-4 rounded-t-2xl border-b border-slate-700/50 bg-slate-900/50 p-4 md:grid md:grid-cols-2">
 		<div class="flex items-center gap-2">
-			<p class="text-lg font-bold text-white">Feeds</p>
+			<p class="text-lg font-bold text-white">{$t('feeds.title')}</p>
 			<span
 				class="bg-primary-500/20 text-primary-300 border-primary-500/30 inline-block rounded-full border px-3 py-1 text-sm font-bold">
-				<span class="me-1">{feeds.length}</span> feeds
+				<span class="me-1">{feeds.length}</span>
+				{$t('header.feeds').toLowerCase()}
 			</span>
 		</div>
 		<div class="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 md:justify-self-end">
 			<div class="w-full md:w-64">
 				<SearchInput
 					bind:value={searchText}
-					placeholder="Search feeds..." />
+					placeholder={$t('feeds.search_placeholder')} />
 			</div>
 			<button
 				class="bg-primary-600 hover:bg-primary-500 focus:ring-primary-500 group relative inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900"
@@ -93,7 +95,7 @@
 					name="add"
 					size="1.25em"
 					class="mr-2" />
-				Add Feed
+				{$t('feeds.add_feed')}
 			</button>
 		</div>
 	</div>
@@ -103,15 +105,15 @@
 		<div class="flex items-center gap-2">
 			<label
 				for="sort-select-feeds"
-				class="text-sm text-slate-400">Sort:</label>
+				class="text-sm text-slate-400">{$t('feeds.sort')}</label>
 			<select
 				id="sort-select-feeds"
 				bind:value={orderby}
 				class="focus:border-primary-500 focus:ring-primary-500 flex-1 rounded-lg border border-slate-700 bg-slate-900/50 px-3 py-2 text-sm text-white">
-				<option value="name">Name</option>
-				<option value="url">URL</option>
-				<option value="tags">Tags</option>
-				<option value="enabled">Status</option>
+				<option value="name">{$t('common.name')}</option>
+				<option value="url">{$t('common.url')}</option>
+				<option value="tags">{$t('common.tags')}</option>
+				<option value="enabled">{$t('common.status')}</option>
 			</select>
 			<button
 				onclick={() => (order = order === 'asc' ? 'desc' : 'asc')}
@@ -133,7 +135,7 @@
 					orderby === 'name' ? 'text-primary-400 font-bold' : ''
 				].join(' ')}
 				onclick={() => changeOrder('name')}>
-				<span>name</span>
+				<span>{$t('common.name')}</span>
 				{#if orderby === 'name'}
 					<div class="translate-y-1">
 						<Icon
@@ -149,7 +151,7 @@
 					orderby === 'url' ? 'text-primary-400 font-bold' : ''
 				].join(' ')}
 				onclick={() => changeOrder('url')}>
-				<span>url</span>
+				<span>{$t('common.url')}</span>
 				{#if orderby === 'url'}
 					<div class="translate-y-1">
 						<Icon
@@ -165,7 +167,7 @@
 					orderby === 'tags' ? 'text-primary-400 font-bold' : ''
 				].join(' ')}
 				onclick={() => changeOrder('tags')}>
-				<span>tags</span>
+				<span>{$t('common.tags')}</span>
 				{#if orderby === 'tags'}
 					<div class="translate-y-1">
 						<Icon
@@ -181,7 +183,7 @@
 					orderby === 'enabled' ? 'text-primary-400 font-bold' : ''
 				].join(' ')}
 				onclick={() => changeOrder('enabled')}>
-				<span>status</span>
+				<span>{$t('common.status')}</span>
 				{#if orderby === 'enabled'}
 					<div class="translate-y-1">
 						<Icon
@@ -208,7 +210,7 @@
 				<div class="pe-10">
 					<Status
 						color={feed.enabled ? 'bg-teal-500' : 'bg-rose-500'}
-						text={feed.enabled ? 'Enabled' : 'Disabled'} />
+						text={feed.enabled ? $t('common.enabled') : $t('common.disabled')} />
 				</div>
 				<div class="flex items-center gap-2">
 					<IconButton
@@ -246,7 +248,7 @@
 					<Tags tags={feed.tags.map((tag) => tag.name)} />
 					<Status
 						color={feed.enabled ? 'bg-teal-500' : 'bg-rose-500'}
-						text={feed.enabled ? 'Enabled' : 'Disabled'} />
+						text={feed.enabled ? $t('common.enabled') : $t('common.disabled')} />
 				</div>
 			</div>
 		{/each}
@@ -263,7 +265,9 @@
 
 		<!-- Header -->
 		<div class="relative flex items-center justify-between border-b border-slate-700/50 p-6">
-			<h2 class="text-2xl font-bold text-white">{target ? 'Edit' : 'Add'} Feed</h2>
+			<h2 class="text-2xl font-bold text-white">
+				{target ? $t('feeds.edit_feed') : $t('feeds.add_feed')}
+			</h2>
 			<IconButton
 				icon="close"
 				onclick={() => dialog.close()}
@@ -286,7 +290,7 @@
 			<div class="flex items-center justify-between">
 				<label
 					for="enabled-toggle"
-					class="text-sm font-medium text-slate-300">Status</label>
+					class="text-sm font-medium text-slate-300">{$t('common.status')}</label>
 				<button
 					type="button"
 					id="enabled-toggle"
@@ -303,7 +307,7 @@
 				</button>
 			</div>
 			<div class="text-sm text-slate-400">
-				{enabled ? 'Feed is enabled' : 'Feed is disabled'}
+				{enabled ? $t('feeds.feed_enabled') : $t('feeds.feed_disabled')}
 			</div>
 			<input
 				type="hidden"
@@ -319,7 +323,7 @@
 			<div class="flex flex-col gap-2">
 				<label
 					for="feed-name"
-					class="text-sm font-medium text-slate-300">Name</label>
+					class="text-sm font-medium text-slate-300">{$t('common.name')}</label>
 				<input
 					id="feed-name"
 					type="text"
@@ -333,7 +337,7 @@
 			<div class="flex flex-col gap-2">
 				<label
 					for="feed-url"
-					class="text-sm font-medium text-slate-300">URL</label>
+					class="text-sm font-medium text-slate-300">{$t('common.url')}</label>
 				<input
 					id="feed-url"
 					type="url"
@@ -347,7 +351,7 @@
 			<div class="flex flex-col gap-2">
 				<label
 					for="feed-tags"
-					class="text-sm font-medium text-slate-300">Tags</label>
+					class="text-sm font-medium text-slate-300">{$t('common.tags')}</label>
 				<div
 					class="flex min-h-[44px] flex-wrap gap-2 rounded-lg border border-slate-700 bg-slate-900/50 p-3">
 					{#each data.tags as tag}
@@ -382,12 +386,12 @@
 					type="button"
 					onclick={() => dialog.close()}
 					class="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2.5 font-semibold text-slate-300 transition-all hover:bg-slate-800 hover:text-white">
-					Cancel
+					{$t('common.cancel')}
 				</button>
 				<button
 					type="submit"
 					class="bg-primary-600 hover:bg-primary-500 focus:ring-primary-500 rounded-lg px-4 py-2.5 font-semibold text-white transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900">
-					Save
+					{$t('common.save')}
 				</button>
 			</div>
 		</form>
