@@ -46,6 +46,14 @@
 		dialog.showModal();
 	};
 
+	let deleteDialog: HTMLDialogElement;
+	let deleteTarget = $state<string | null>(null);
+
+	const confirmDelete = (id: string) => {
+		deleteTarget = id;
+		deleteDialog.showModal();
+	};
+
 	onMount(() => {
 		// Client-side edit logic replaces the need for this check
 	});
@@ -140,6 +148,7 @@
 				<div class="flex items-center gap-2">
 					<IconButton
 						icon="delete"
+						onclick={() => confirmDelete(tag.id)}
 						class="text-slate-400 hover:text-red-400" />
 					<IconButton
 						icon="edit"
@@ -163,6 +172,7 @@
 							class="hover:text-primary-400 text-slate-400" />
 						<IconButton
 							icon="delete"
+							onclick={() => confirmDelete(tag.id)}
 							class="text-slate-400 hover:text-red-400" />
 					</div>
 				</div>
@@ -195,9 +205,10 @@
 			method="POST"
 			action="?/register"
 			use:enhance={() => {
-				return async ({ result }) => {
+				return async ({ result, update }) => {
 					if (result.type === 'success') {
 						dialog.close();
+						await update();
 					}
 				};
 			}}
@@ -264,5 +275,48 @@
 				</button>
 			</div>
 		</form>
+	</div>
+</dialog>
+
+<dialog
+	bind:this={deleteDialog}
+	class="m-auto min-w-[90%] max-w-[90%] overflow-visible bg-transparent md:min-w-[400px] md:max-w-[400px]">
+	<div class="glass-card relative overflow-hidden rounded-2xl">
+		<!-- Background blurs -->
+		<div class="absolute -right-24 -top-24 h-48 w-48 rounded-full bg-red-500/20 blur-3xl"></div>
+
+		<div class="p-6">
+			<h3 class="mb-2 text-xl font-bold text-white">{$t('common.delete_confirm')}</h3>
+			<p class="mb-6 text-slate-300">{$t('common.delete_confirm_desc')}</p>
+
+			<form
+				method="POST"
+				action="?/delete"
+				use:enhance={() => {
+					return async ({ result, update }) => {
+						if (result.type === 'success') {
+							deleteDialog.close();
+							await update();
+						}
+					};
+				}}
+				class="flex justify-end gap-4">
+				<input
+					type="hidden"
+					name="id"
+					value={deleteTarget} />
+				<button
+					type="button"
+					onclick={() => deleteDialog.close()}
+					class="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2.5 font-semibold text-slate-300 transition-all hover:bg-slate-800 hover:text-white">
+					{$t('common.cancel')}
+				</button>
+				<button
+					type="submit"
+					class="rounded-lg bg-red-600 px-4 py-2.5 font-semibold text-white transition-all hover:scale-105 hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-slate-900">
+					{$t('common.delete')}
+				</button>
+			</form>
+		</div>
 	</div>
 </dialog>

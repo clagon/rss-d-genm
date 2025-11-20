@@ -74,14 +74,14 @@ export const actions = {
                     .insert(tags)
                     .values(updateValues)
                     .onConflictDoUpdate({
-                        target: feeds.id,
+                        target: tags.id,
                         set: {
                             name,
                             discord_webhook_url,
                             discord_channel_id,
                         }
                     })
-                    .returning({ id: feeds.id });
+                    .returning({ id: tags.id });
 
                 // tagIdが空の場合はロールバック
                 if (tagId.length === 0) {
@@ -92,5 +92,20 @@ export const actions = {
             console.error('Error during transaction:', error);
             return { success: false, message: 'Failed to register feed' };
         }
+        return { success: true };
+    },
+    delete: async ({ request }) => {
+        const data = await request.formData();
+        const id = data.get('id');
+        if (typeof id !== 'string') {
+            return { success: false, message: 'Invalid ID' };
+        }
+        try {
+            await db.delete(tags).where(eq(tags.id, id));
+        } catch (e: any) {
+            console.error('Error deleting tag:', e);
+            error(500, `Failed to delete tag: ${e.message}`);
+        }
+        return { success: true };
     }
 } satisfies Actions;

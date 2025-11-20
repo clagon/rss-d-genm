@@ -28,6 +28,14 @@
 			{$t('error.not_found_desc')}
 		</p>
 
+		{#if page.error}
+			<pre
+				class="mb-8 max-w-full overflow-auto rounded bg-slate-800 p-4 text-left text-xs text-red-400">
+				{JSON.stringify(page.error, null, 2)}
+				{page.error.stack}
+			</pre>
+		{/if}
+
 		<a
 			href="/"
 			class="bg-primary-600 hover:bg-primary-500 focus:ring-primary-500 group relative inline-flex items-center justify-center rounded-full px-8 py-3 text-base font-semibold text-white transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900">

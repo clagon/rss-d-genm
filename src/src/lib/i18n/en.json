@@ -12,7 +12,9 @@
     "name": "Name",
     "url": "URL",
     "tags": "Tags",
-    "last_updated": "Last updated:"
+    "last_updated": "Last updated:",
+    "delete_confirm": "Are you sure?",
+    "delete_confirm_desc": "This action cannot be undone."
   },
   "header": {
     "list": "List",

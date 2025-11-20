@@ -14,32 +14,43 @@ export const load: PageServerLoad = async ({ request }) => {
         error(401, 'Unauthorized');
     }
 
-    const feedsData = await db
-        .select({
-            ...getTableColumns(feeds),
-            tags: sql<(typeof tags.$inferSelect)[] | null>`json_agg(${tags})`
-        })
-        .from(feeds)
-        .leftJoin(feed_tags, eq(feeds.id, feed_tags.feed_id))
-        .leftJoin(tags, eq(feed_tags.tag_id, tags.id))
-        .groupBy(feeds.id)
-        .orderBy(desc(feeds.updated_at));
-    const tagsData = await db
-        .select()
-        .from(tags)
-        .orderBy(desc(tags.updated_at));
-    if (feedsData) {
+    try {
+        const feedsData = await db
+            .select({
+                ...getTableColumns(feeds),
+                tags: sql<(typeof tags.$inferSelect)[] | null>`json_agg(${tags})`
+            })
+            .from(feeds)
+            .leftJoin(feed_tags, eq(feeds.id, feed_tags.feed_id))
+            .leftJoin(tags, eq(feed_tags.tag_id, tags.id))
+            .groupBy(feeds.id)
+            .orderBy(desc(feeds.updated_at));
+
+        const tagsData = await db
+            .select()
+            .from(tags)
+            .orderBy(desc(tags.updated_at));
+
+        if (feedsData) {
+            return {
+                feeds: feedsData.map((row) => ({
+                    ...row,
+                    tags: row.tags && row.tags[0] != null ? row.tags : []
+                })),
+                tags: tagsData,
+                title: 'RSS Feed'
+            };
+        }
+
         return {
-            feeds: feedsData.map((row) => ({
-                ...row,
-                tags: row.tags && row.tags[0] != null ? row.tags : []
-            })),
+            feeds: [],
             tags: tagsData,
             title: 'RSS Feed'
         };
+    } catch (e: any) {
+        console.error('Error loading feeds:', e);
+        error(500, `Error loading feeds: ${e.message}`);
     }
-
-    error(404, 'Not found');
 };
 
 export const actions = {
@@ -137,9 +148,24 @@ export const actions = {
                     .delete(feed_tags)
                     .where(and(eq(feed_tags.feed_id, feedIdValue), notInArray(feed_tags.tag_id, tagArr)));
             });
-        } catch (error) {
-            console.error('Error during transaction:', error);
-            return { success: false, message: 'Failed to register feed' };
+        } catch (e: any) {
+            console.error('Error during transaction:', e);
+            error(500, `Failed to register feed: ${e.message}`);
         }
+        return { success: true };
+    },
+    delete: async ({ request }) => {
+        const data = await request.formData();
+        const id = data.get('id');
+        if (typeof id !== 'string') {
+            return { success: false, message: 'Invalid ID' };
+        }
+        try {
+            await db.delete(feeds).where(eq(feeds.id, id));
+        } catch (e: any) {
+            console.error('Error deleting feed:', e);
+            error(500, `Failed to delete feed: ${e.message}`);
+        }
+        return { success: true };
     }
 } satisfies Actions;

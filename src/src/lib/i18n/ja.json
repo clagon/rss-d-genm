@@ -12,7 +12,9 @@
     "name": "名前",
     "url": "URL",
     "tags": "タグ",
-    "last_updated": "最終更新:"
+    "last_updated": "最終更新:",
+    "delete_confirm": "本当に削除しますか?",
+    "delete_confirm_desc": "この操作は取り消せません。"
   },
   "header": {
     "list": "リスト",
