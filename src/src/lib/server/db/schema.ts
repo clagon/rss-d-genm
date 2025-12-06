@@ -1,5 +1,5 @@
 import {
-	pgTable, primaryKey, boolean, uuid, timestamp, varchar, text
+	pgTable, primaryKey, boolean, uuid, timestamp, varchar, text, index
 } from 'drizzle-orm/pg-core';
 
 export const feeds = pgTable('feeds', {
@@ -10,7 +10,9 @@ export const feeds = pgTable('feeds', {
 	last_posted_guid: varchar('last_posted_guid'),
 	created_at: timestamp('created_at').defaultNow(),
 	updated_at: timestamp('updated_at').defaultNow()
-});
+}, (table) => [
+	index('feeds_updated_at_idx').on(table.updated_at)
+]);
 
 export const tags = pgTable('tags', {
 	id: uuid('id').primaryKey().defaultRandom(),
@@ -19,7 +21,9 @@ export const tags = pgTable('tags', {
 	discord_webhook_url: varchar('discord_webhook_url').notNull(),
 	created_at: timestamp('created_at').defaultNow(),
 	updated_at: timestamp('updated_at').defaultNow()
-});
+}, (table) => [
+	index('tags_updated_at_idx').on(table.updated_at)
+]);
 
 export const feed_tags = pgTable(
 	'feed_tags',
