@@ -14,7 +14,7 @@ import {
   APIChatInputApplicationCommandInteraction,
   APIModalSubmitInteraction
 } from 'discord-api-types/v10';
-import { db } from './db';
+import { db } from './db/index.js';
 import { feeds, tags, feed_tags } from './db/schema';
 import { eq, and } from 'drizzle-orm';
 
