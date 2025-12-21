@@ -3,6 +3,8 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { verifyKey } from 'discord-interactions';
 import {
+  APIInteraction,
+  ApplicationCommandType,
   InteractionType,
   InteractionResponseType,
   MessageFlags,
@@ -16,7 +18,13 @@ import { db } from './db';
 import { feeds, tags, feed_tags } from './db/schema';
 import { eq, and } from 'drizzle-orm';
 
-const app = new Hono();
+type HonoEnv = {
+  Variables: {
+    interaction: APIInteraction;
+  };
+};
+
+const app = new Hono<HonoEnv>();
 
 // Authorization Middleware
 const verifyDiscordRequest = async (c: any, next: any) => {
@@ -36,7 +44,6 @@ const verifyDiscordRequest = async (c: any, next: any) => {
   }
 
   // Restore body for next handlers
-  // Hono consumes the body stream, so we need to set it back or parse it here
   const jsonBody = JSON.parse(body);
   c.set('interaction', jsonBody);
 
@@ -44,25 +51,35 @@ const verifyDiscordRequest = async (c: any, next: any) => {
 };
 
 // Check Role Middleware Helper
-const hasRequiredRole = (interaction: any): boolean => {
+const hasRequiredRole = (interaction: APIInteraction): boolean => {
   const authorizedRoleId = process.env.DISCORD_AUTHORIZED_ROLE_ID;
-  if (!authorizedRoleId) return true; // If no role configured, allow all (or should we deny?) - Assuming deny is safer but prompts implies restrictive if set.
+  if (!authorizedRoleId) return true;
 
-  const roles = interaction.member?.roles || [];
+  if (!('member' in interaction) || !interaction.member) {
+    return false;
+  }
+
+  const roles = interaction.member.roles || [];
   return roles.includes(authorizedRoleId);
 };
+
+const getOptionValue = (options: APIChatInputApplicationCommandInteraction['data']['options'], name: string): string | undefined => {
+  const option = (options || []).find(o => o.name === name);
+  if (option && 'value' in option && option.value !== undefined && option.value !== null) {
+    return String(option.value);
+  }
+  return undefined;
+}
 
 app.post('/interactions', verifyDiscordRequest, async (c) => {
   const interaction = c.get('interaction');
 
-  // Handle Ping
   if (interaction.type === InteractionType.Ping) {
     return c.json({ type: InteractionResponseType.Pong });
   }
 
-  // Authorization Check
   if (!hasRequiredRole(interaction)) {
-     return c.json({
+    return c.json({
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
         content: 'You do not have permission to use this command.',
@@ -71,17 +88,17 @@ app.post('/interactions', verifyDiscordRequest, async (c) => {
     });
   }
 
-  // Handle Slash Commands
   if (interaction.type === InteractionType.ApplicationCommand) {
-    const { name, options } = interaction.data;
+    if (interaction.data.type !== ApplicationCommandType.ChatInput) {
+      return c.json({ error: 'Unsupported command type' }, 400);
+    }
+    const { name } = interaction.data;
+    const options = interaction.data.options;
 
     if (name === 'list_feeds') {
       const allFeeds = await db.select().from(feeds);
-      // Fetch tags for each feed
       const feedList = await Promise.all(allFeeds.map(async (feed) => {
-        const linkedTags = await db.select({
-            tagName: tags.name
-          })
+        const linkedTags = await db.select({ tagName: tags.name })
           .from(feed_tags)
           .innerJoin(tags, eq(feed_tags.tag_id, tags.id))
           .where(eq(feed_tags.feed_id, feed.id));
@@ -111,6 +128,7 @@ app.post('/interactions', verifyDiscordRequest, async (c) => {
     }
 
     if (name === 'create_feed') {
+      // Modal definition remains the same
       return c.json({
         type: InteractionResponseType.Modal,
         data: {
@@ -119,27 +137,11 @@ app.post('/interactions', verifyDiscordRequest, async (c) => {
           components: [
             {
               type: ComponentType.ActionRow,
-              components: [
-                {
-                  type: ComponentType.TextInput,
-                  custom_id: 'feed_name',
-                  label: 'Feed Name',
-                  style: TextInputStyle.Short,
-                  required: true
-                }
-              ]
+              components: [{ type: ComponentType.TextInput, custom_id: 'feed_name', label: 'Feed Name', style: TextInputStyle.Short, required: true }]
             },
             {
               type: ComponentType.ActionRow,
-              components: [
-                {
-                  type: ComponentType.TextInput,
-                  custom_id: 'feed_url',
-                  label: 'Feed URL',
-                  style: TextInputStyle.Short,
-                  required: true
-                }
-              ]
+              components: [{ type: ComponentType.TextInput, custom_id: 'feed_url', label: 'Feed URL', style: TextInputStyle.Short, required: true }]
             }
           ]
         }
@@ -147,7 +149,8 @@ app.post('/interactions', verifyDiscordRequest, async (c) => {
     }
 
     if (name === 'create_tag') {
-       return c.json({
+      // Modal definition remains the same
+      return c.json({
         type: InteractionResponseType.Modal,
         data: {
           custom_id: 'create_tag_modal',
@@ -155,27 +158,11 @@ app.post('/interactions', verifyDiscordRequest, async (c) => {
           components: [
             {
               type: ComponentType.ActionRow,
-              components: [
-                {
-                  type: ComponentType.TextInput,
-                  custom_id: 'tag_name',
-                  label: 'Tag Name',
-                  style: TextInputStyle.Short,
-                  required: true
-                }
-              ]
+              components: [{ type: ComponentType.TextInput, custom_id: 'tag_name', label: 'Tag Name', style: TextInputStyle.Short, required: true }]
             },
             {
               type: ComponentType.ActionRow,
-              components: [
-                {
-                  type: ComponentType.TextInput,
-                  custom_id: 'webhook_url',
-                  label: 'Discord Webhook URL',
-                  style: TextInputStyle.Short,
-                  required: true
-                }
-              ]
+              components: [{ type: ComponentType.TextInput, custom_id: 'webhook_url', label: 'Discord Webhook URL', style: TextInputStyle.Short, required: true }]
             }
           ]
         }
@@ -183,193 +170,115 @@ app.post('/interactions', verifyDiscordRequest, async (c) => {
     }
 
     if (name === 'edit_feed') {
-      const feedName = options.find((o: any) => o.name === 'name')?.value;
+      const feedName = getOptionValue(options, 'name');
+      if (!feedName) {
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: 'Missing required option: name', flags: MessageFlags.Ephemeral } });
+      }
       const feed = await db.select().from(feeds).where(eq(feeds.name, feedName)).limit(1);
 
       if (feed.length === 0) {
-         return c.json({
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: {
-            content: `Feed "${feedName}" not found.`,
-            flags: MessageFlags.Ephemeral
-          }
-        });
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: `Feed "${feedName}" not found.`, flags: MessageFlags.Ephemeral } }
+        );
       }
 
       const f = feed[0];
-
+      // Modal definition remains the same
       return c.json({
         type: InteractionResponseType.Modal,
         data: {
           custom_id: `edit_feed_modal:${f.id}`,
           title: 'Edit Feed',
           components: [
-            {
-              type: ComponentType.ActionRow,
-              components: [
-                {
-                  type: ComponentType.TextInput,
-                  custom_id: 'feed_name',
-                  label: 'Feed Name',
-                  style: TextInputStyle.Short,
-                  value: f.name,
-                  required: true
-                }
-              ]
-            },
-            {
-              type: ComponentType.ActionRow,
-              components: [
-                {
-                  type: ComponentType.TextInput,
-                  custom_id: 'feed_url',
-                  label: 'Feed URL',
-                  style: TextInputStyle.Short,
-                  value: f.url,
-                  required: true
-                }
-              ]
-            },
-             {
-              type: ComponentType.ActionRow,
-              components: [
-                {
-                  type: ComponentType.TextInput,
-                  custom_id: 'feed_enabled',
-                  label: 'Enabled (true/false)',
-                  style: TextInputStyle.Short,
-                  value: String(f.enabled),
-                  required: true
-                }
-              ]
-            }
+            { type: ComponentType.ActionRow, components: [{ type: ComponentType.TextInput, custom_id: 'feed_name', label: 'Feed Name', style: TextInputStyle.Short, value: f.name, required: true }] },
+            { type: ComponentType.ActionRow, components: [{ type: ComponentType.TextInput, custom_id: 'feed_url', label: 'Feed URL', style: TextInputStyle.Short, value: f.url, required: true }] },
+            { type: ComponentType.ActionRow, components: [{ type: ComponentType.TextInput, custom_id: 'feed_enabled', label: 'Enabled (true/false)', style: TextInputStyle.Short, value: String(f.enabled), required: true }] }
           ]
         }
       });
     }
 
     if (name === 'edit_tag') {
-      const tagName = options.find((o: any) => o.name === 'name')?.value;
+      const tagName = getOptionValue(options, 'name');
+      if (!tagName) {
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: 'Missing required option: name', flags: MessageFlags.Ephemeral } });
+      }
       const tag = await db.select().from(tags).where(eq(tags.name, tagName)).limit(1);
 
       if (tag.length === 0) {
-         return c.json({
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: {
-            content: `Tag "${tagName}" not found.`,
-            flags: MessageFlags.Ephemeral
-          }
-        });
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: `Tag "${tagName}" not found.`, flags: MessageFlags.Ephemeral } }
+        );
       }
 
       const t = tag[0];
-
+      // Modal definition remains the same
       return c.json({
         type: InteractionResponseType.Modal,
         data: {
           custom_id: `edit_tag_modal:${t.id}`,
           title: 'Edit Tag',
           components: [
-            {
-              type: ComponentType.ActionRow,
-              components: [
-                {
-                  type: ComponentType.TextInput,
-                  custom_id: 'tag_name',
-                  label: 'Tag Name',
-                  style: TextInputStyle.Short,
-                  value: t.name,
-                  required: true
-                }
-              ]
-            },
-            {
-              type: ComponentType.ActionRow,
-              components: [
-                {
-                  type: ComponentType.TextInput,
-                  custom_id: 'webhook_url',
-                  label: 'Webhook URL',
-                  style: TextInputStyle.Short,
-                  value: t.discord_webhook_url,
-                  required: true
-                }
-              ]
-            }
+            { type: ComponentType.ActionRow, components: [{ type: ComponentType.TextInput, custom_id: 'tag_name', label: 'Tag Name', style: TextInputStyle.Short, value: t.name, required: true }] },
+            { type: ComponentType.ActionRow, components: [{ type: ComponentType.TextInput, custom_id: 'webhook_url', label: 'Webhook URL', style: TextInputStyle.Short, value: t.discord_webhook_url, required: true }] }
           ]
         }
       });
     }
 
     if (name === 'link_tag') {
-      const feedName = options.find((o: any) => o.name === 'feed_name')?.value;
-      const tagName = options.find((o: any) => o.name === 'tag_name')?.value;
+      const feedName = getOptionValue(options, 'feed_name');
+      const tagName = getOptionValue(options, 'tag_name');
+
+      if (!feedName || !tagName) {
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: 'Missing required options: feed_name and/or tag_name', flags: MessageFlags.Ephemeral } });
+      }
 
       const feed = await db.select().from(feeds).where(eq(feeds.name, feedName)).limit(1);
       const tag = await db.select().from(tags).where(eq(tags.name, tagName)).limit(1);
 
       if (feed.length === 0 || tag.length === 0) {
-        return c.json({
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: { content: 'Feed or Tag not found.', flags: MessageFlags.Ephemeral }
-        });
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: 'Feed or Tag not found.', flags: MessageFlags.Ephemeral } });
       }
 
       try {
-        await db.insert(feed_tags).values({
-          feed_id: feed[0].id,
-          tag_id: tag[0].id
-        });
-        return c.json({
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: { content: `Linked tag "${tagName}" to feed "${feedName}".` }
-        });
+        await db.insert(feed_tags).values({ feed_id: feed[0].id, tag_id: tag[0].id });
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: `Linked tag "${tagName}" to feed "${feedName}".` } });
       } catch (e) {
-        return c.json({
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: { content: 'Failed to link. Maybe already linked?', flags: MessageFlags.Ephemeral }
-        });
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: 'Failed to link. Maybe already linked?', flags: MessageFlags.Ephemeral } });
       }
     }
 
     if (name === 'unlink_tag') {
-      const feedName = options.find((o: any) => o.name === 'feed_name')?.value;
-      const tagName = options.find((o: any) => o.name === 'tag_name')?.value;
+      const feedName = getOptionValue(options, 'feed_name');
+      const tagName = getOptionValue(options, 'tag_name');
+
+      if (!feedName || !tagName) {
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: 'Missing required options: feed_name and/or tag_name', flags: MessageFlags.Ephemeral } });
+      }
 
       const feed = await db.select().from(feeds).where(eq(feeds.name, feedName)).limit(1);
       const tag = await db.select().from(tags).where(eq(tags.name, tagName)).limit(1);
 
       if (feed.length === 0 || tag.length === 0) {
-        return c.json({
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: { content: 'Feed or Tag not found.', flags: MessageFlags.Ephemeral }
-        });
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: 'Feed or Tag not found.', flags: MessageFlags.Ephemeral } });
       }
 
       await db.delete(feed_tags)
-        .where(and(
-          eq(feed_tags.feed_id, feed[0].id),
-          eq(feed_tags.tag_id, tag[0].id)
-        ));
+        .where(and(eq(feed_tags.feed_id, feed[0].id), eq(feed_tags.tag_id, tag[0].id)));
 
-      return c.json({
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: { content: `Unlinked tag "${tagName}" from feed "${feedName}".` }
-      });
+      return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: `Unlinked tag "${tagName}" from feed "${feedName}".` } });
     }
   }
 
-  // Handle Modal Submits
   if (interaction.type === InteractionType.ModalSubmit) {
     const { custom_id, components } = interaction.data;
 
-    // Helper to get value from components
-    const getValue = (id: string) => {
-      // Structure is components[Row].components[0].value
-      // We iterate to find the right custom_id
+    const getValue = (id: string): string | null => {
+      if (!components) return null;
       for (const row of components) {
-        for (const component of row.components) {
-          if (component.custom_id === id) return component.value;
+        if (row.type === ComponentType.ActionRow) {
+          for (const component of row.components) {
+            if (component.custom_id === id) return component.value;
+          }
         }
       }
       return null;
@@ -379,21 +288,15 @@ app.post('/interactions', verifyDiscordRequest, async (c) => {
       const name = getValue('feed_name');
       const url = getValue('feed_url');
 
+      if (!name || !url) {
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: 'Name and URL are required.', flags: MessageFlags.Ephemeral } });
+      }
+
       try {
-        await db.insert(feeds).values({
-          name,
-          url,
-          enabled: true
-        });
-        return c.json({
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: { content: `Feed "${name}" created.` }
-        });
+        await db.insert(feeds).values({ name, url, enabled: true });
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: `Feed "${name}" created.` } });
       } catch (e) {
-        return c.json({
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: { content: 'Failed to create feed. Name might be duplicate or invalid.', flags: MessageFlags.Ephemeral }
-        });
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: 'Failed to create feed. Name might be duplicate or invalid.', flags: MessageFlags.Ephemeral } });
       }
     }
 
@@ -401,20 +304,15 @@ app.post('/interactions', verifyDiscordRequest, async (c) => {
       const name = getValue('tag_name');
       const webhook_url = getValue('webhook_url');
 
+      if (!name || !webhook_url) {
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: 'Tag Name and Webhook URL are required.', flags: MessageFlags.Ephemeral } });
+      }
+
       try {
-        await db.insert(tags).values({
-          name,
-          discord_webhook_url: webhook_url
-        });
-        return c.json({
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: { content: `Tag "${name}" created.` }
-        });
+        await db.insert(tags).values({ name, discord_webhook_url: webhook_url });
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: `Tag "${name}" created.` } });
       } catch (e) {
-        return c.json({
-          type: InteractionResponseType.ChannelMessageWithSource,
-          data: { content: 'Failed to create tag. Name might be duplicate.', flags: MessageFlags.Ephemeral }
-        });
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: 'Failed to create tag. Name might be duplicate.', flags: MessageFlags.Ephemeral } });
       }
     }
 
@@ -423,16 +321,17 @@ app.post('/interactions', verifyDiscordRequest, async (c) => {
       const name = getValue('feed_name');
       const url = getValue('feed_url');
       const enabledRaw = getValue('feed_enabled');
-      const enabled = enabledRaw?.toLowerCase() === 'true';
+
+      if (!name || !url || !enabledRaw) {
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: 'Name, URL, and Enabled are required.', flags: MessageFlags.Ephemeral } });
+      }
+      const enabled = enabledRaw.toLowerCase() === 'true';
 
       await db.update(feeds)
         .set({ name, url, enabled, updated_at: new Date() })
         .where(eq(feeds.id, feedId));
 
-      return c.json({
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: { content: `Feed updated.` }
-      });
+      return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: `Feed updated.` } });
     }
 
     if (custom_id.startsWith('edit_tag_modal:')) {
@@ -440,14 +339,15 @@ app.post('/interactions', verifyDiscordRequest, async (c) => {
       const name = getValue('tag_name');
       const webhook_url = getValue('webhook_url');
 
+      if (!name || !webhook_url) {
+        return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: 'Tag Name and Webhook URL are required.', flags: MessageFlags.Ephemeral } });
+      }
+
       await db.update(tags)
         .set({ name, discord_webhook_url: webhook_url, updated_at: new Date() })
         .where(eq(tags.id, tagId));
 
-      return c.json({
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: { content: `Tag updated.` }
-      });
+      return c.json({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: `Tag updated.` } });
     }
   }
 
@@ -456,12 +356,10 @@ app.post('/interactions', verifyDiscordRequest, async (c) => {
 
 const port = Number(process.env.PORT) || 3000;
 
-if (require.main === module || process.env.NODE_ENV !== 'test') {
-    console.log(`Server is running on port ${port}`);
-    serve({
-      fetch: app.fetch,
-      port
-    });
-}
+console.log(`Server is running on port ${port}`);
+serve({
+  fetch: app.fetch,
+  port
+});
 
 export default app;
